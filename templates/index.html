@@ -1,0 +1,234 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}">
+  <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}">
+  <title>
+   {% block title %} Rural-Care.AI {% endblock title %}
+  </title>
+  <!--     Fonts and icons     -->
+  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
+  <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet" />
+  <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet" />
+    <!-- Font Awesome Icons -->
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <!-- CSS Files -->
+    <link id="pagestyle" href="{% static 'assets/css/material-dashboard.css' %}?v=3.1.0" rel="stylesheet" />
+  <!-- Nepcha Analytics (nepcha.com) -->
+  <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
+  <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
+</head>
+    <title>Rural-Care.AI - Empowering Rural Healthcare</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .hero-section {
+          background-image: url("{% static 'assets/img/dalle2.jpg' %}");
+
+
+
+
+/* background-image: url('https://media.gettyimages.com/id/1497811046/photo/a-doctor-and-her-assistant-doctor-engaged-in-a-conversation-with-family-members-of-a-village.jpg?s=2048x2048&w=gi&k=20&c=f3Vpq13RKx_-JVY5yte6Y7a_ZI8WiWjkB3Dk7IFBEZk='); */
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            text-align: center;
+        }
+        .features-section {
+            background-color: #f8f9fa;
+            padding: 50px 0;
+            text-align: center;
+        }
+        .feature {
+            margin-bottom: 30px;
+        }
+        .feature img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+        .curved-image {
+  overflow: hidden;
+  border-radius: 50%;
+  width: 150px; /* Adjust the width as needed */
+  height: 150px; /* Adjust the height as needed */
+  margin: 0 auto; /* Centers the image horizontally */
+}
+
+.curved-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.hero-section {
+            position: relative;
+            background-color: #f5f5f5; /* Example background color */
+            padding: 50px;
+            text-align: center;
+        }
+
+        .button-top-right {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+        }
+
+    </style>
+</head>
+<body>
+    <section class="hero-section">
+        <h1 style="color:white;">Welcome to Rural-Care.AI</h1>
+        <h4 style="color:white;">Empowering Rural Healthcare with AI</h4>
+
+
+
+
+        <a href="/login" class="btn btn-primary">Get Started</a>
+
+    </section>
+    <div class="container mt-5">
+      <div class="row">
+          <div class="col-md-4 mb-4">
+              <div class="card shadow-lg">
+                  <span class="badge rounded-pill bg-light text-dark w-30 mt-n2 mx-auto">ML</span>
+                  <div class="card-header text-center pt-4 pb-3">
+                      <h1 class="font-weight-bold mt-2">
+                        
+                          Health AI 
+                      </h1>
+                  </div>
+                  <div class="card-body text-lg-start text-center pt-0">
+                      <div class="d-flex justify-content-lg-start justify-content-center p-2">
+                          <i class="material-icons my-auto">done</i>
+                          <span class="ps-3">Tracking and Detection of Major Diseases:</span>
+                      </div>
+  
+                      <div class="d-flex justify-content-lg-start justify-content-center p-2">
+                          <i class="material-icons my-auto">done</i>
+                          <span class="ps-3">The health AI employs advanced algorithms to detect major diseases .</span>
+                      </div>
+  
+                      <div class="d-flex justify-content-lg-start justify-content-center p-2">
+                          <i class="material-icons my-auto">done</i>
+                          <span class="ps-3">Diabetes, brain tumors, Parkinson's, breast cancer, etc </span>
+                      </div>
+  
+               
+  
+                      <div class="curved-image mt-3">
+                          <img src="{% static 'assets/img/wall1.jpg' %}" alt="Curved Image">
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="card bg-gradient-dark shadow-lg">
+              <span class="badge rounded-pill bg-primary w-30 mt-n2 mx-auto">AI </span>
+              <div class="card-header text-center pt-4 pb-3 bg-transparent">
+                <h1 class="font-weight-bold mt-2 text-white">
+                  Consult +  AI Doctor              </h1>
+              </div>
+              <div class="card-body text-lg-start text-center pt-0">
+                <div class="d-flex justify-content-lg-start justify-content-center p-2">
+                  <i class="material-icons my-auto text-white">done</i>
+                  <span class="ps-3 text-white">Regional Languages</span>
+                </div>
+        
+                <div class="d-flex justify-content-lg-start justify-content-center p-2">
+                  <i class="material-icons my-auto text-white">done</i>
+                  <span class="ps-3 text-white">24/7 Continuous Consultancy - Video Call </span>
+                </div>
+        
+                <div class="d-flex justify-content-lg-start justify-content-center p-2">
+                  <i class="material-icons my-auto text-white">done</i>
+                  <span class="ps-3 text-white">Precision in Medical Advice</span>
+                </div>
+        
+              
+        
+                <div class="curved-image mt-3">
+                  <img src="{% static 'assets/img/dalle1.jpg' %}" alt="Curved Image">
+              </div>
+          </div>
+      </div>
+  </div>
+          
+                         <div class="col-md-4 mb-4">
+              <div class="card shadow-lg">
+                  <span class="badge rounded-pill bg-light text-dark w-30 mt-n2 mx-auto">Data</span>
+                  <div class="card-header text-center pt-4 pb-3">
+                      <h1 class="font-weight-bold mt-2">
+                        
+                        Reports via WhatsApp/SMS:
+
+
+                      </h1>
+                  </div>
+                  <div class="card-body text-lg-start text-center pt-0">
+                      <div class="d-flex justify-content-lg-start justify-content-center p-2">
+                          <i class="material-icons my-auto">done</i>
+                          <span class="ps-3">Real-time Notifications</span>
+                      </div>
+  
+                      <div class="d-flex justify-content-lg-start justify-content-center p-2">
+                          <i class="material-icons my-auto">done</i>
+                          <span class="ps-3">Instant Accessibility </span>
+                      </div>
+  
+                      <div class="d-flex justify-content-lg-start justify-content-center p-2">
+                          <i class="material-icons my-auto">done</i>
+                          <span class="ps-3">Linguistic Adaptability</span>
+                      </div>
+  
+               
+  
+                      <div class="curved-image mt-3">
+                          <img src="{% static 'assets/img/dalle3.jpg' %}" alt="Curved Image">
+                      </div>
+                  </div>
+              </div>
+          </div>
+    <div class="card card-background">
+      <div class="full-background" style="background-image: url('https://media.gettyimages.com/id/1130934349/photo/doctor-doing-social-service-in-village.webp?s=2048x2048&w=gi&k=20&c=tGrspYseM7k1hvbD5NwJ0Nuw50IBcYw2pzEbVRG435U=')"></div>
+      <div class="card-body pt-12">
+        <h4 class="text-white font-weight-normal">Telemedicine </h4>
+        <p>Telemedicine at finger tips</p>
+      </div>
+    </div>
+    
+</body>
+    <!--   Core JS Files   -->
+    <script src="{% static 'assets/js/core/popper.min.js' %}" ></script>
+    <script src="{% static 'assets/js/core/bootstrap.min.js' %}" ></script>
+    <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}" ></script>
+    <script src="{% static 'assets/js/plugins/smooth-scrollbar.min.js' %}" ></script>
+    <script>
+      var win = navigator.platform.indexOf('Win') > -1;
+      if (win && document.querySelector('#sidenav-scrollbar')) {
+        var options = {
+          damping: '0.5'
+        }
+        Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+      }
+    </script>
+    <!-- Github buttons -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+    <script src="{% static 'assets/js/material-dashboard.min.js' %}?v=3.1.0"></script>
+  </body>
+  
+  </html>

@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid px-2 px-md-4">
+
+  <div class="page-header min-height-300 border-radius-xl mt-4"
+    style="background-image: url('https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?auto=format&fit=crop&w=1920&q=80');">
+    <span class="mask bg-gradient-primary opacity-6"></span>
+  </div>
+
+  <div class="card card-body mx-3 mx-md-4 mt-n6">
+
+    <div class="row gx-4 mb-2">
+      <div class="col-auto">
+        <div class="avatar avatar-xl position-relative">
+          <img src="{% static 'assets/img/bruce-mars.jpg' %}"
+            class="w-100 border-radius-lg shadow-sm">
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <form method="post">
+      {% csrf_token %}
+
+      <label>Your message:</label><br>
+
+      <input type="radio" name="user_input_type" value="text" checked> Text
+      <input type="radio" name="user_input_type" value="voice"> Voice
+
+      <br><br>
+
+      <!-- TEXT INPUT -->
+      <div id="textInputArea">
+        <textarea id="user_input" name="user_input" rows="4" cols="50"
+          placeholder="Type your problem..."></textarea><br>
+      </div>
+
+      <!-- VOICE INPUT -->
+      <div id="voiceInputArea" style="display: none;">
+        <button type="button" id="recordBtn" class="btn bg-gradient-primary">
+          START RECORDING
+        </button>
+      </div>
+
+      <br>
+      <button class="btn bg-gradient-primary" type="submit">SEND</button>
+    </form>
+
+    <!-- AI RESPONSE -->
+    {% if response %}
+    <div id="aiResponse"
+      style="margin-top: 20px; padding: 15px; border: 2px solid #3498db; border-radius: 10px; background-color: #ecf0f1;">
+      
+      <h2 style="color: #2c3e50;">AI Response:</h2>
+
+      <pre style="white-space: pre-wrap; font-size: 16px;">
+{{ response }}
+      </pre>
+
+      <!-- 🔥 CONSULT BUTTON LOGIC -->
+      {% if need_doctor %}
+      <div class="mt-3 text-center">
+        <a href="{% url 'doctor_list' %}" class="btn btn-danger">
+          🚨 Consult Doctor Now
+        </a>
+      </div>
+      {% else %}
+      <div class="mt-3 text-center">
+        <p style="color: green; font-weight: bold;">
+          ✅ You can manage this at home for now.
+        </p>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- SPEAK RESPONSE -->
+    <script>
+      function speak(text) {
+        let speech = new SpeechSynthesisUtterance(text);
+        speech.lang = "en-IN";
+        window.speechSynthesis.speak(speech);
+      }
+
+      speak("{{ response|escapejs }}");
+    </script>
+
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- ================= JS SECTION ================= -->
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+  // Toggle text / voice UI
+  $(document).ready(function () {
+    $('input[type="radio"]').change(function () {
+      if ($(this).val() == 'text') {
+        $('#textInputArea').show();
+        $('#voiceInputArea').hide();
+      } else {
+        $('#textInputArea').hide();
+        $('#voiceInputArea').show();
+      }
+    });
+  });
+
+  // 🎤 SPEECH RECOGNITION
+  let recognition;
+  let isRecording = false;
+
+  if ('webkitSpeechRecognition' in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = "en-US";
+
+    recognition.onresult = function (event) {
+      document.getElementById("user_input").value =
+        event.results[0][0].transcript;
+    };
+
+    recognition.onerror = function (event) {
+      if (event.error === "network") {
+        alert("⚠️ Network issue. Check internet.");
+      } else if (event.error === "not-allowed") {
+        alert("⚠️ Mic permission denied.");
+      } else {
+        alert("Error: " + event.error);
+      }
+    };
+  }
+
+  document.getElementById("recordBtn").onclick = function () {
+
+    if (!recognition) {
+      alert("Speech Recognition not supported");
+      return;
+    }
+
+    if (!isRecording) {
+      recognition.start();
+      this.innerText = "STOP RECORDING";
+      isRecording = true;
+    } else {
+      recognition.stop();
+      this.innerText = "START RECORDING";
+      isRecording = false;
+    }
+  };
+</script>
+
+{% endblock %}

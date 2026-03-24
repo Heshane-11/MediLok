@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Swastya Shiksha {% endblock title %}
+
+{% block content %} 
+<div class="container">
+    <div class="row">
+        {% for topic in educational_topics %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card">
+                <!-- Add onclick attribute to the card image -->
+                <div class="card-header p-0 mx-3 mt-3 position-relative z-index-1">
+                    <a href="javascript:;" class="d-block">
+                        <!-- Add an image if available -->
+                        <img src="{% static 'placeholder_image.jpg' %}" class="img-fluid border-radius-lg" id="thumbnail{{ topic.id }}" onclick="openYoutubeVideo('{{ topic.url }}', '{{ topic.topic }}', '{{ topic.id }}')">
+                    </a>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ topic.topic }}</h5>
+                    <p class="card-text">{{ videoTitle }}</p> <!-- Display the video title here -->
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="videoModal" tabindex="-1" role="dialog" aria-labelledby="videoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="videoModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="height: 500px;"> <!-- Adjust the height as per your requirement -->
+                <div class="embed-responsive embed-responsive-16by9" style="height: 100%;">
+                    <iframe id="videoIframe" class="embed-responsive-item" src="" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Include necessary JavaScript libraries -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    // Function to open YouTube video in the modal
+    function openYoutubeVideo(videoUrl, topicId) {
+        var videoId = videoUrl.split('v=')[1];
+        var videoTitle = decodeURIComponent(videoUrl.split('v=')[0].split('/').pop().replace(/\+/g, ' '));
+        $("#videoTitle" + topicId).text(videoTitle); // Set the title in the card body
+        var youtubeUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        $("#videoIframe").attr("src", youtubeUrl);
+        $("#videoModalLabel").text(videoTitle); // Set the title in the modal header
+        $("#videoModal").modal('show');
+    }
+    // Function to pause the video and reset the iframe source
+    function pauseVideo() {
+        $('#videoIframe').attr('src', '');
+    }
+
+    // Function to get YouTube video thumbnail URL
+    function getThumbnailUrl(videoUrl) {
+        var videoId = videoUrl.split('v=')[1];
+        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    }
+
+    // Call the getThumbnailUrl function when the page loads
+    $(document).ready(function() {
+        {% for topic in educational_topics %}
+            var thumbnailUrl = getThumbnailUrl("{{ topic.url }}");
+            $("#thumbnail{{ topic.id }}").attr("src", thumbnailUrl);
+        {% endfor %}
+    });
+</script>
+{% endblock %}

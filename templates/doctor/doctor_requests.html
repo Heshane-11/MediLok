@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>📩 Consultation Requests</h3>
+  </div>
+
+  {% for req in requests %}
+  <div class="card p-4 mb-3 shadow-sm border-0">
+
+    <div class="row align-items-center">
+
+      <!-- LEFT SIDE -->
+      <div class="col-md-8">
+        <h5 class="mb-2">
+          👤 Patient: {{ req.patient.user.first_name }}
+        </h5>
+
+        <p class="mb-1">
+          👨‍⚕️ Doctor: {{ req.doctor.doctor_name }}
+        </p>
+
+        <p class="mb-1">
+          📞 Call Type: 
+          {% if req.call_type == 'video' %}
+            🎥 Video Call
+          {% else %}
+            📱 Voice Call
+          {% endif %}
+        </p>
+
+        <p class="mb-0">
+          Status:
+          {% if req.status == 'pending' %}
+            <span class="badge bg-warning text-dark">Pending</span>
+          {% elif req.status == 'accepted' %}
+            <span class="badge bg-success">Accepted</span>
+          {% else %}
+            <span class="badge bg-danger">Rejected</span>
+          {% endif %}
+        </p>
+      </div>
+
+      <!-- RIGHT SIDE BUTTONS -->
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+
+        {% if req.status == 'pending' %}
+          <a href="{% url 'accept_request' req.id %}" 
+             class="btn btn-success me-2">
+            ✅ Accept
+          </a>
+
+          <a href="{% url 'reject_request' req.id %}" 
+             class="btn btn-danger">
+            ❌ Reject
+          </a>
+        {% elif req.status == 'accepted' %}
+          <span class="text-success fw-bold">✔ Already Accepted</span>
+        {% else %}
+          <span class="text-danger fw-bold">✖ Rejected</span>
+        {% endif %}
+
+      </div>
+
+    </div>
+
+  </div>
+  {% empty %}
+
+  <!-- EMPTY STATE -->
+  <div class="text-center mt-5">
+    <h5>No consultation requests yet 😴</h5>
+    <p class="text-muted">Requests from patients will appear here</p>
+  </div>
+
+  {% endfor %}
+
+</div>
+
+{% endblock %}

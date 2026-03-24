@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Call</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+
+    <script>
+    function getUrlParams(url) {
+        let urlStr = url.split('?')[1];
+        const urlSearchParams = new URLSearchParams(urlStr);
+        return Object.fromEntries(urlSearchParams.entries());
+    }
+
+    const params = getUrlParams(window.location.href);
+    const roomID = params.roomID || "999";
+
+    const userID = Math.floor(Math.random() * 10000).toString();
+    const userName = "user_" + userID;
+
+    // ✅ YOUR REAL KEYS
+    const appID = 1246962281;
+    const serverSecret = "633cc585ec8eb02d54807fe6d9737ead";
+
+    // ✅ CORRECT FUNCTION
+    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+        appID,
+        serverSecret,
+        roomID,
+        userID,
+        userName
+    );
+
+    const zp = ZegoUIKitPrebuilt.create(kitToken);
+
+    zp.joinRoom({
+        container: document.querySelector("#root"),
+
+        sharedLinks: [{
+            name: "Join Call",
+            url: window.location.href,
+        }],
+
+        scenario: {
+            mode: ZegoUIKitPrebuilt.VideoConference,
+        },
+
+        turnOnMicrophoneWhenJoining: true,
+        turnOnCameraWhenJoining: true,
+        maxUsers: 2,
+    });
+    </script>
+
+</body>
+</html>
