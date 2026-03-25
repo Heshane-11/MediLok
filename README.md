@@ -286,7 +286,7 @@ ZEGO_SERVER_SECRET=your_zego_server_secret
 **Heshane Garg**  
 Full-Stack Developer | AI & Web Enthusiast
 
-[![GitHub](https://img.shields.io/badge/GitHub-heshanegarg-181717?style=flat-square&logo=github)](https://github.com/heshanegarg)
+[![GitHub](https://img.shields.io/badge/GitHub-heshanegarg-181717?style=flat-square&logo=github)](https://github.com/Heshane-11)
 
 ---
 
