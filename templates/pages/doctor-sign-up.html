@@ -30,7 +30,7 @@
 
   <div class="card p-4 shadow" style="width: 400px;">
 
-    <h3 class="text-center mb-3">Create Account</h3>
+    <h3 class="text-center mb-3">Doctor Registration</h3>
 
     <!-- 🔴 ERROR MESSAGE -->
     {% if error %}
@@ -49,24 +49,15 @@
       </div>
 
       <div class="mb-3">
+        <input type="text" name="doctor_name" class="form-control" placeholder="Doctor Name (e.g., Dr. Smith)" required>
+      </div>
+
+      <div class="mb-3">
         <input type="text" name="phone_number" class="form-control" placeholder="Phone Number">
       </div>
 
       <div class="mb-3">
-        <input type="text" name="location" class="form-control" placeholder="Location">
-      </div>
-
-      <div class="mb-3">
-        <input type="number" name="age" class="form-control" placeholder="Age">
-      </div>
-
-      <div class="mb-3">
-        <select name="gender" class="form-control">
-          <option value="">Select Gender</option>
-          <option value="M">Male</option>
-          <option value="F">Female</option>
-          <option value="O">Other</option>
-        </select>
+        <textarea name="doctor_bio" class="form-control" placeholder="Doctor Bio"></textarea>
       </div>
 
       <button type="submit" class="btn btn-primary w-100">Register</button>
@@ -74,8 +65,8 @@
     </form>
 
     <p class="text-center mt-3">
-      Already have an account?
-      <a href="{% url 'login' %}">Sign in</a>
+      Already have a doctor account?
+      <a href="{% url 'doctor_login' %}">Sign in</a>
     </p>
 
   </div>

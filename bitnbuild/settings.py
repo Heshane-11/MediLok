@@ -1,20 +1,21 @@
 from pathlib import Path
 import os
+import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 🔐 SECRET KEY (move to env in future if needed)
-SECRET_KEY = 'django-insecure-pc@3mjl%fc$asvg2rxafm3_^1u&en)wxgq0mzy6wmkvz1l3qh@'
+# SECRET KEY — override via environment variable in production
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-pc@3mjl%fc$asvg2rxafm3_^1u&en)wxgq0mzy6wmkvz1l3qh@')
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'c0e6-182-237-154-55.ngrok-free.app'
-]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+# Accept Railway / any host when ALLOWED_HOSTS env is not set
+if not DEBUG:
+    ALLOWED_HOSTS += ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -30,6 +31,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -55,6 +57,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'social_django.context_processors.backends',
+                'doctor.context_processors.user_role_processor',
             ],
         },
     },
@@ -63,11 +66,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bitnbuild.wsgi.application'
 
 # ================= DATABASE =================
+# Uses DATABASE_URL env var on Railway (PostgreSQL)
+# Falls back to SQLite locally
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600
+    )
 }
 
 # ================= PASSWORD VALIDATION =================
@@ -88,10 +93,12 @@ USE_TZ = True
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For production collectstatic
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

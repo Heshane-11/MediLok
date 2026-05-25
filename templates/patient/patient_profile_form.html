@@ -1,131 +1,282 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %} Patient Profile {% endblock title %}
+{% block title %}Patient Profile | MediLok{% endblock title %}
 
-{% block content %} 
+{% block content %}
 <style>
-    .step {
-        display: none;
-    }
+  .profile-hero {
+    background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
+    border-radius: 22px;
+    box-shadow: 0 10px 36px rgba(124,58,237,0.3);
+    position: relative; overflow: hidden;
+  }
+  .profile-hero::before {
+    content:''; position:absolute; right:-60px; top:-60px;
+    width:240px; height:240px;
+    background:rgba(255,255,255,0.06); border-radius:50%;
+  }
 
-    .step.active {
-        display: block;
-    }
-    .steps {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
+  /* Step indicator */
+  .step-track {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin-bottom: 36px;
+  }
+  .step-node {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.95rem;
+    border: 2.5px solid #e2e8f0;
+    background: #fff; color: #94a3b8;
+    transition: all 0.35s ease;
+    position: relative; z-index: 1;
+  }
+  .step-node.active {
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    border-color: #7c3aed; color: #fff;
+    box-shadow: 0 4px 14px rgba(124,58,237,0.4);
+  }
+  .step-node.done {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-color: #10b981; color: #fff;
+  }
+  .step-connector {
+    height: 2px; width: 60px;
+    background: #e2e8f0; flex-shrink: 0;
+    transition: background 0.35s;
+  }
+  .step-connector.done { background: #10b981; }
 
-.steps-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
+  /* Form card */
+  .profile-form-card {
+    background: rgba(255,255,255,0.98);
+    border-radius: 22px; border: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.09);
+    overflow: hidden;
+  }
+  .form-section-header {
+    background: linear-gradient(135deg, #f8f7ff, #ede9fe);
+    border-bottom: 1px solid rgba(124,58,237,0.1);
+    padding: 20px 28px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .form-section-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; flex-shrink: 0;
+  }
+  .form-inner { padding: 28px; }
 
-.step-item {
-    width: 40px;
-    height: 40px;
-    border: 2px solid #ccc;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    margin: 0 10px;
-}
+  .field-label {
+    font-weight: 700; font-size: 0.85rem; color: #374151;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .field-control {
+    width: 100%; border: 2px solid #e5e7eb; border-radius: 11px;
+    padding: 11px 15px; font-size: 0.9rem; outline: none;
+    transition: border-color .22s, box-shadow .22s;
+    font-family: inherit;
+    background: #fff;
+  }
+  .field-control:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 4px rgba(124,58,237,0.12);
+  }
+  select.field-control { appearance: auto; }
 
-.step-item.active {
-    background-color: #007bff;
-    color: #fff;
-    border-color: #007bff;
-}
+  /* Buttons */
+  .btn-next, .btn-submit {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    color: #fff; font-weight: 700; padding: 12px 30px;
+    border-radius: 12px; border: none; cursor: pointer;
+    font-size: 0.95rem; font-family: inherit;
+    box-shadow: 0 4px 14px rgba(124,58,237,0.4);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-next:hover, .btn-submit:hover {
+    transform: translateY(-2px); box-shadow: 0 8px 22px rgba(124,58,237,0.5);
+  }
+  .btn-prev {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #f8fafc; color: #64748b; font-weight: 700;
+    padding: 12px 26px; border-radius: 12px; border: 2px solid #e2e8f0;
+    cursor: pointer; font-size: 0.95rem; font-family: inherit;
+    transition: all .2s;
+  }
+  .btn-prev:hover { background: #f1f5f9; border-color: #cbd5e1; }
 
-.step-item:not(:first-child)::before {
-    content: '';
-    width: 50px;
-    height: 2px;
-    background-color: #ccc;
-    position: absolute;
-    top: 19px;
-    left: -55px;
-}
-
-
+  /* Slide transition */
+  .profile-step { display: none; animation: fadeSlide .4s ease both; }
+  .profile-step.active { display: block; }
+  @keyframes fadeSlide {
+    from { opacity:0; transform: translateX(30px); }
+    to   { opacity:1; transform: translateX(0); }
+  }
 </style>
-</head>
-<div class="container">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="steps">
-                <div class="step-circle active">Step 1</div>
-                <div class="step-circle">Step 2</div>
-                <!-- Add more step circles as needed -->
-            </div>
-            <form id="multi-step-form" class="form" method="POST">
-                {% csrf_token %}
-                <div class="step active" id="step-1">
-                    <div class="input-group input-group-outline my-3" >
-                    {{ form.name }}
-                    
-                    {{ form.last_name }}
-                </div>
-                    <button type="button" class="btn btn-primary" id="next-btn">Next</button>
-                </div>
-                <div class="step" id="step-2">
-                    <div class="input-group input-group-outline my-3" >
 
-                    {{ form.age }}
-                    <div class="input-group input-group-outline my-3" >
+<div class="container-fluid py-4 px-2 px-md-4">
 
-                    {{ form.gender }}
-                    <div class="input-group input-group-outline my-3" >
-
-                    {{ form.location }}
-                    <div class="input-group input-group-outline my-3" >
-
-                    {{ form.diseases }}
-                    <div class="input-group input-group-outline my-3" >
-
-                    {{ form.phone_number }}
-                    <div class="input-group input-group-outline my-3" >
-
-                    <button type="button" class="btn btn-primary" id="prev-btn">Previous</button>
-<br>
-<br>
-                 
-                    <button type="submit" class="btn btn-primary" id="submit-btn">Submit</button>
-                </div>
-            </form>
-        </div>
+  <!-- Hero Banner -->
+  <div class="profile-hero p-5 mb-5 text-white text-center text-md-start">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <span class="badge bg-white text-primary mb-3 px-3 py-2 fw-bold shadow-sm">ONBOARDING</span>
+        <h1 class="text-white fw-bolder mb-2" style="font-family:'Outfit',sans-serif;">Set Up Your Profile</h1>
+        <p class="opacity-9 mb-0">Complete your health profile to get personalised doctor recommendations and faster consultations.</p>
+      </div>
+      <div class="col-md-4 text-center d-none d-md-block">
+        <i class="material-icons text-white opacity-6" style="font-size:130px;">account_circle</i>
+      </div>
     </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-xl-7 col-lg-9">
+
+      <!-- Step Indicator -->
+      <div class="step-track">
+        <div class="step-node active" id="node-1">1</div>
+        <div class="step-connector" id="connector-1"></div>
+        <div class="step-node" id="node-2">2</div>
+      </div>
+
+      <!-- Form Card -->
+      <div class="profile-form-card">
+
+        <form id="profileForm" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <!-- ===== STEP 1: Name ===== -->
+          <div class="profile-step active" id="profile-step-1">
+            <div class="form-section-header">
+              <div class="form-section-icon">
+                <i class="material-icons">person</i>
+              </div>
+              <div>
+                <h6 class="fw-bold text-dark mb-0">Personal Information</h6>
+                <p class="text-muted text-xs mb-0">Step 1 of 2 — Your basic details</p>
+              </div>
+            </div>
+            <div class="form-inner">
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="field-label">
+                    <i class="material-icons text-primary" style="font-size:17px;">badge</i> First Name
+                  </label>
+                  {{ form.name }}
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">
+                    <i class="material-icons text-primary" style="font-size:17px;">badge</i> Last Name
+                  </label>
+                  {{ form.last_name }}
+                </div>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="button" class="btn-next" id="nextBtn">
+                  Next <i class="material-icons" style="font-size:18px;">arrow_forward</i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== STEP 2: Health Details ===== -->
+          <div class="profile-step" id="profile-step-2">
+            <div class="form-section-header">
+              <div class="form-section-icon">
+                <i class="material-icons">favorite</i>
+              </div>
+              <div>
+                <h6 class="fw-bold text-dark mb-0">Health Details</h6>
+                <p class="text-muted text-xs mb-0">Step 2 of 2 — Medical & contact info</p>
+              </div>
+            </div>
+            <div class="form-inner">
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="field-label">
+                    <i class="material-icons text-primary" style="font-size:17px;">cake</i> Age
+                  </label>
+                  {{ form.age }}
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">
+                    <i class="material-icons text-primary" style="font-size:17px;">wc</i> Gender
+                  </label>
+                  {{ form.gender }}
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">
+                    <i class="material-icons text-primary" style="font-size:17px;">location_on</i> Location
+                  </label>
+                  {{ form.location }}
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">
+                    <i class="material-icons text-primary" style="font-size:17px;">phone</i> Phone Number
+                  </label>
+                  {{ form.phone_number }}
+                </div>
+                <div class="col-12">
+                  <label class="field-label">
+                    <i class="material-icons text-danger" style="font-size:17px;">coronavirus</i> Known Conditions / Diseases
+                  </label>
+                  {{ form.diseases }}
+                </div>
+              </div>
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn-prev" id="prevBtn">
+                  <i class="material-icons" style="font-size:18px;">arrow_back</i> Back
+                </button>
+                <button type="submit" class="btn-submit">
+                  <i class="material-icons" style="font-size:18px;">save</i> Save Profile
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
-    $(document).ready(function() {
-        var currentStep = 1;
-        var totalSteps = $('.step').length;
+  // Style all form fields
+  document.querySelectorAll('#profileForm input, #profileForm select, #profileForm textarea').forEach(function(el) {
+    el.classList.add('field-control');
+    if (el.tagName === 'TEXTAREA') el.style.minHeight = '90px';
+  });
 
-        $('#next-btn').on('click', function() {
-            if (currentStep < totalSteps) {
-                $('#step-' + currentStep).removeClass('active');
-                $('.step-circle').eq(currentStep - 1).removeClass('active');
-                currentStep++;
-                $('#step-' + currentStep).addClass('active');
-                $('.step-circle').eq(currentStep - 1).addClass('active');
-            }
-        });
+  // Step navigation
+  var current = 1;
 
-        $('#prev-btn').on('click', function() {
-            if (currentStep > 1) {
-                $('#step-' + currentStep).removeClass('active');
-                $('.step-circle').eq(currentStep - 1).removeClass('active');
-                currentStep--;
-                $('#step-' + currentStep).addClass('active');
-                $('.step-circle').eq(currentStep - 1).addClass('active');
-            }
-        });
-    });
+  function goTo(step) {
+    document.getElementById('profile-step-' + current).classList.remove('active');
+    // Update nodes
+    document.getElementById('node-' + current).classList.remove('active');
+    if (step > current) {
+      document.getElementById('node-' + current).classList.add('done');
+      var conn = document.getElementById('connector-' + current);
+      if (conn) conn.classList.add('done');
+    } else {
+      document.getElementById('node-' + current).classList.remove('done');
+      var conn = document.getElementById('connector-' + current);
+      if (conn) conn.classList.remove('done');
+    }
+    current = step;
+    document.getElementById('profile-step-' + current).classList.add('active');
+    document.getElementById('node-' + current).classList.add('active');
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', function() {
+    if (current < 2) goTo(current + 1);
+  });
+  document.getElementById('prevBtn').addEventListener('click', function() {
+    if (current > 1) goTo(current - 1);
+  });
 </script>
+
 {% endblock %}

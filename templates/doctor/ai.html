@@ -1,158 +1,344 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}AI Doctor | MediLok{% endblock %}
 
 {% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
 
-<div class="container-fluid px-2 px-md-4">
+  .ai-hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f766e 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  }
+  .ai-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(99,102,241,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
 
-  <div class="page-header min-height-300 border-radius-xl mt-4"
-    style="background-image: url('https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?auto=format&fit=crop&w=1920&q=80');">
-    <span class="mask bg-gradient-primary opacity-6"></span>
-  </div>
+  .chat-area {
+    background: rgba(255,255,255,0.97);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
 
-  <div class="card card-body mx-3 mx-md-4 mt-n6">
+  .input-mode-toggle {
+    display: flex;
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .input-mode-toggle label {
+    flex: 1;
+    text-align: center;
+    padding: 8px 16px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #64748b;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .input-mode-toggle input[type="radio"] { display: none; }
+  .input-mode-toggle input[type="radio"]:checked + label {
+    background: #fff;
+    color: #6366f1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
 
-    <div class="row gx-4 mb-2">
-      <div class="col-auto">
-        <div class="avatar avatar-xl position-relative">
-          <img src="{% static 'assets/img/bruce-mars.jpg' %}"
-            class="w-100 border-radius-lg shadow-sm">
+  .symptom-textarea {
+    width: 100%;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px 18px;
+    font-size: 0.95rem;
+    font-family: 'Outfit', sans-serif;
+    resize: vertical;
+    min-height: 120px;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    line-height: 1.6;
+  }
+  .symptom-textarea:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.12);
+  }
+  .symptom-textarea::placeholder { color: #94a3b8; }
+
+  .send-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff; font-weight: 700; padding: 12px 32px;
+    border-radius: 12px; border: none; cursor: pointer; font-size: 0.95rem;
+    box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: 'Outfit', sans-serif;
+  }
+  .send-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.5); }
+
+  .record-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff; font-weight: 700; padding: 12px 28px;
+    border-radius: 12px; border: none; cursor: pointer; font-size: 0.9rem;
+    box-shadow: 0 4px 14px rgba(239,68,68,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .record-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(239,68,68,0.5); }
+  .record-btn.recording {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    animation: recordPulse 1s infinite;
+  }
+  @keyframes recordPulse {
+    0%,100% { box-shadow: 0 4px 14px rgba(239,68,68,.4); }
+    50%      { box-shadow: 0 4px 24px rgba(239,68,68,.7); }
+  }
+
+  /* Response Card */
+  .ai-response-card {
+    background: linear-gradient(135deg, #f8fafc, #f0f9ff);
+    border: 1.5px solid #e0f2fe;
+    border-radius: 18px;
+    padding: 28px;
+    margin-top: 24px;
+    position: relative;
+    animation: slideIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both;
+  }
+  @keyframes slideIn {
+    from { opacity:0; transform:translateY(24px) scale(0.97); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+  .ai-avatar {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 24px;
+    box-shadow: 0 4px 14px rgba(99,102,241,0.4);
+    flex-shrink: 0;
+  }
+  .response-text {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: #1e293b;
+    white-space: pre-wrap;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .consult-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff; font-weight: 700; padding: 12px 28px;
+    border-radius: 12px; text-decoration: none;
+    box-shadow: 0 4px 16px rgba(239,68,68,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: 'Outfit', sans-serif;
+  }
+  .consult-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(239,68,68,.5); color:#fff; }
+
+  .safe-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(16,185,129,0.1); color: #059669;
+    font-weight: 700; padding: 10px 22px; border-radius: 12px;
+    font-size: 0.9rem;
+  }
+
+  .feature-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.9);
+    padding: 6px 14px; border-radius: 99px; font-size: 0.8rem;
+    border: 1px solid rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+  }
+</style>
+
+<div class="container-fluid py-4 px-2 px-md-4">
+
+  <!-- Hero Banner -->
+  <div class="ai-hero p-5 mb-5">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <span class="feature-chip"><i class="material-icons" style="font-size:14px;">smart_toy</i> AI-Powered</span>
+          <span class="feature-chip"><i class="material-icons" style="font-size:14px;">mic</i> Voice Support</span>
+          <span class="feature-chip"><i class="material-icons" style="font-size:14px;">language</i> Hindi + English</span>
         </div>
-      </div>
-    </div>
-
-    <!-- FORM -->
-    <form method="post">
-      {% csrf_token %}
-
-      <label>Your message:</label><br>
-
-      <input type="radio" name="user_input_type" value="text" checked> Text
-      <input type="radio" name="user_input_type" value="voice"> Voice
-
-      <br><br>
-
-      <!-- TEXT INPUT -->
-      <div id="textInputArea">
-        <textarea id="user_input" name="user_input" rows="4" cols="50"
-          placeholder="Type your problem..."></textarea><br>
-      </div>
-
-      <!-- VOICE INPUT -->
-      <div id="voiceInputArea" style="display: none;">
-        <button type="button" id="recordBtn" class="btn bg-gradient-primary">
-          START RECORDING
-        </button>
-      </div>
-
-      <br>
-      <button class="btn bg-gradient-primary" type="submit">SEND</button>
-    </form>
-
-    <!-- AI RESPONSE -->
-    {% if response %}
-    <div id="aiResponse"
-      style="margin-top: 20px; padding: 15px; border: 2px solid #3498db; border-radius: 10px; background-color: #ecf0f1;">
-      
-      <h2 style="color: #2c3e50;">AI Response:</h2>
-
-      <pre style="white-space: pre-wrap; font-size: 16px;">
-{{ response }}
-      </pre>
-
-      <!-- 🔥 CONSULT BUTTON LOGIC -->
-      {% if need_doctor %}
-      <div class="mt-3 text-center">
-        <a href="{% url 'doctor_list' %}" class="btn btn-danger">
-          🚨 Consult Doctor Now
-        </a>
-      </div>
-      {% else %}
-      <div class="mt-3 text-center">
-        <p style="color: green; font-weight: bold;">
-          ✅ You can manage this at home for now.
+        <h1 class="text-white fw-bolder mb-2" style="font-family:'Outfit',sans-serif; font-size:2.2rem;">
+          AI Doctor Assistant
+        </h1>
+        <p class="text-white opacity-8 mb-0" style="font-size:1.05rem;">
+          Describe your symptoms and get an instant AI-powered health assessment. Powered by Groq Llama 3.1 — speak or type in any language.
         </p>
       </div>
-      {% endif %}
-
+      <div class="col-lg-5 text-center d-none d-lg-block">
+        <i class="material-icons text-white opacity-6" style="font-size:130px;">psychology</i>
+      </div>
     </div>
-
-    <!-- SPEAK RESPONSE -->
-    <script>
-      function speak(text) {
-        let speech = new SpeechSynthesisUtterance(text);
-        speech.lang = "en-IN";
-        window.speechSynthesis.speak(speech);
-      }
-
-      speak("{{ response|escapejs }}");
-    </script>
-
-    {% endif %}
-
   </div>
+
+  <!-- Main Chat Interface -->
+  <div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+
+      <div class="chat-area p-4 p-md-5">
+
+        <!-- Input Mode Toggle -->
+        <h6 class="fw-bold text-dark mb-3">Choose Input Mode</h6>
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="input-mode-toggle mb-4">
+            <input type="radio" name="user_input_type" value="text" id="modeText" checked>
+            <label for="modeText">
+              <i class="material-icons" style="font-size:18px;">keyboard</i> Type Symptoms
+            </label>
+            <input type="radio" name="user_input_type" value="voice" id="modeVoice">
+            <label for="modeVoice">
+              <i class="material-icons" style="font-size:18px;">mic</i> Voice Input
+            </label>
+          </div>
+
+          <!-- Text Input Area -->
+          <div id="textInputArea">
+            <label class="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
+              <i class="material-icons text-primary" style="font-size:18px;">edit_note</i>
+              Describe your symptoms
+            </label>
+            <textarea id="user_input" name="user_input" class="symptom-textarea"
+              placeholder="e.g. I've had a fever of 102°F for 2 days, along with body aches and headache..."></textarea>
+          </div>
+
+          <!-- Voice Input Area -->
+          <div id="voiceInputArea" style="display:none;">
+            <p class="text-muted mb-3">Click to start recording your symptoms. Speak clearly in Hindi or English.</p>
+            <button type="button" id="recordBtn" class="record-btn">
+              <i class="material-icons" style="font-size:20px;">mic</i>
+              <span id="recordBtnText">Start Recording</span>
+            </button>
+            <div id="voiceTranscript" class="mt-3 text-muted text-sm" style="min-height:24px;font-style:italic;"></div>
+          </div>
+
+          <div class="d-flex justify-content-end mt-4">
+            <button type="submit" class="send-btn">
+              <i class="material-icons" style="font-size:20px;">send</i>
+              Analyze Symptoms
+            </button>
+          </div>
+        </form>
+
+        <!-- AI Response Block -->
+        {% if response %}
+        <div class="ai-response-card">
+          <div class="d-flex align-items-start gap-3 mb-3">
+            <div class="ai-avatar">
+              <i class="material-icons">smart_toy</i>
+            </div>
+            <div>
+              <h6 class="fw-bold text-dark mb-0">MediLok AI Assessment</h6>
+              <p class="text-muted text-xs mb-0">Powered by Groq Llama 3.1</p>
+            </div>
+          </div>
+
+          <div class="response-text mb-4">{{ response }}</div>
+
+          {% if need_doctor %}
+          <div class="d-flex align-items-center gap-3 mt-2 p-3 bg-danger bg-opacity-10 rounded-3">
+            <i class="material-icons text-danger" style="font-size:28px;">warning_amber</i>
+            <div class="flex-grow-1">
+              <p class="fw-bold text-danger mb-1">⚠️ Medical Attention Recommended</p>
+              <p class="text-muted text-sm mb-0">Your symptoms may require professional evaluation. Consult a doctor now.</p>
+            </div>
+            <a href="{% url 'doctor_list' %}" class="consult-cta">
+              <i class="material-icons">local_hospital</i> Find Doctor
+            </a>
+          </div>
+          {% else %}
+          <div class="safe-badge">
+            <i class="material-icons">verified</i>
+            You can manage this at home for now. Monitor symptoms and rest well.
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<!-- ================= JS SECTION ================= -->
-
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-
+<!-- Pure Vanilla JS — no jQuery -->
 <script>
-  // Toggle text / voice UI
-  $(document).ready(function () {
-    $('input[type="radio"]').change(function () {
-      if ($(this).val() == 'text') {
-        $('#textInputArea').show();
-        $('#voiceInputArea').hide();
-      } else {
-        $('#textInputArea').hide();
-        $('#voiceInputArea').show();
-      }
+  // Input mode toggle
+  document.querySelectorAll('input[name="user_input_type"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      document.getElementById('textInputArea').style.display = this.value === 'text' ? 'block' : 'none';
+      document.getElementById('voiceInputArea').style.display = this.value === 'voice' ? 'block' : 'none';
     });
   });
 
-  // 🎤 SPEECH RECOGNITION
-  let recognition;
+  // Speech Recognition
+  let recognition = null;
   let isRecording = false;
 
-  if ('webkitSpeechRecognition' in window) {
-    recognition = new webkitSpeechRecognition();
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    let SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRec();
     recognition.continuous = false;
-    recognition.lang = "en-US";
+    recognition.lang = 'hi-IN';
+    recognition.interimResults = true;
 
-    recognition.onresult = function (event) {
-      document.getElementById("user_input").value =
-        event.results[0][0].transcript;
+    recognition.onresult = function(event) {
+      let transcript = Array.from(event.results).map(r => r[0].transcript).join('');
+      document.getElementById('user_input').value = transcript;
+      document.getElementById('voiceTranscript').innerText = '🎤 Heard: ' + transcript;
     };
-
-    recognition.onerror = function (event) {
-      if (event.error === "network") {
-        alert("⚠️ Network issue. Check internet.");
-      } else if (event.error === "not-allowed") {
-        alert("⚠️ Mic permission denied.");
-      } else {
-        alert("Error: " + event.error);
-      }
+    recognition.onerror = function(event) {
+      document.getElementById('voiceTranscript').innerText = '❌ Error: ' + event.error;
+    };
+    recognition.onend = function() {
+      isRecording = false;
+      let btn = document.getElementById('recordBtn');
+      btn.classList.remove('recording');
+      document.getElementById('recordBtnText').innerText = 'Start Recording';
     };
   }
 
-  document.getElementById("recordBtn").onclick = function () {
-
-    if (!recognition) {
-      alert("Speech Recognition not supported");
-      return;
-    }
-
+  document.getElementById('recordBtn').addEventListener('click', function() {
+    if (!recognition) { alert('Speech Recognition not supported in this browser.'); return; }
     if (!isRecording) {
-      recognition.start();
-      this.innerText = "STOP RECORDING";
-      isRecording = true;
+      recognition.start(); isRecording = true;
+      this.classList.add('recording');
+      document.getElementById('recordBtnText').innerText = 'Stop Recording';
     } else {
-      recognition.stop();
-      this.innerText = "START RECORDING";
-      isRecording = false;
+      recognition.stop(); isRecording = false;
+      this.classList.remove('recording');
+      document.getElementById('recordBtnText').innerText = 'Start Recording';
     }
-  };
+  });
+
+  // Auto-speak AI response
+  {% if response %}
+  (function() {
+    let text = "{{ response|escapejs }}";
+    if ('speechSynthesis' in window && text) {
+      let speech = new SpeechSynthesisUtterance(text.substring(0, 300));
+      speech.lang = 'en-IN';
+      speech.rate = 0.95;
+      window.speechSynthesis.speak(speech);
+    }
+  })();
+  {% endif %}
 </script>
 
 {% endblock %}

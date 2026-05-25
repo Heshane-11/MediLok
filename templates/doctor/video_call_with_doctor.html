@@ -1,69 +1,192 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Video Call</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-        #root {
-            width: 100vw;
-            height: 100vh;
-        }
-    </style>
-</head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Consultation | MediLok</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<body>
-    <div id="root"></div>
-
-    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
-
-    <script>
-    function getUrlParams(url) {
-        let urlStr = url.split('?')[1];
-        const urlSearchParams = new URLSearchParams(urlStr);
-        return Object.fromEntries(urlSearchParams.entries());
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #0a0a0f;
+      font-family: 'Outfit', sans-serif;
     }
 
-    const params = getUrlParams(window.location.href);
-    const roomID = params.roomID || "999";
+    /* Full-screen Jitsi embed */
+    #jitsi-container {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+    }
 
-    const userID = Math.floor(Math.random() * 10000).toString();
-    const userName = "user_" + userID;
+    /* Floating HUD overlay */
+    #hud {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      pointer-events: none;
+    }
 
-    // ✅ YOUR REAL KEYS
-    const appID = 1246962281;
-    const serverSecret = "633cc585ec8eb02d54807fe6d9737ead";
+    .hud-logo {
+      background: rgba(15,15,25,0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 99px;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+    }
+    .hud-logo .logo-dot {
+      width: 8px; height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: livePulse 1.2s infinite;
+    }
+    @keyframes livePulse {
+      0%,100% { opacity:1; transform: scale(1); }
+      50%      { opacity:0.4; transform: scale(1.6); }
+    }
 
-    // ✅ CORRECT FUNCTION
-    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-        appID,
-        serverSecret,
-        roomID,
-        userID,
-        userName
-    );
+    /* Session ended overlay */
+    #expired-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.92);
+      backdrop-filter: blur(12px);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      color: #fff;
+      padding: 40px;
+    }
+    #expired-overlay.show { display: flex; }
 
-    const zp = ZegoUIKitPrebuilt.create(kitToken);
+    .expired-icon {
+      font-size: 72px;
+      margin-bottom: 24px;
+      animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity:0; transform: scale(0.7); }
+      to   { opacity:1; transform: scale(1); }
+    }
+    .expired-title {
+      font-size: 2rem; font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .expired-sub {
+      color: rgba(255,255,255,0.65);
+      font-size: 1.05rem;
+      margin-bottom: 32px;
+    }
+    .exit-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-weight: 700; padding: 14px 36px;
+      border-radius: 14px; border: none; cursor: pointer;
+      font-size: 1rem; font-family: 'Outfit', sans-serif;
+      box-shadow: 0 6px 20px rgba(99,102,241,0.5);
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .exit-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(99,102,241,0.6); color:#fff; }
 
-    zp.joinRoom({
-        container: document.querySelector("#root"),
+    /* Material Icons mini CDN */
+    .mi { font-family: 'Material Icons'; font-style: normal; font-size: inherit; line-height: 1; display:inline-block; vertical-align: middle; }
+  </style>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
 
-        sharedLinks: [{
-            name: "Join Call",
-            url: window.location.href,
-        }],
+  <!-- Floating HUD -->
+  <div id="hud">
+    <div class="hud-logo">
+      <span class="logo-dot"></span>
+      MediLok · Live Consultation
+    </div>
+  </div>
 
-        scenario: {
-            mode: ZegoUIKitPrebuilt.VideoConference,
-        },
+  <!-- Jitsi Video Container -->
+  <div id="jitsi-container" data-room-id="{{ zego_room_id }}"></div>
 
-        turnOnMicrophoneWhenJoining: true,
-        turnOnCameraWhenJoining: true,
-        maxUsers: 2,
+  <!-- Session Ended Overlay (shown when call is left voluntarily) -->
+  <div id="expired-overlay">
+    <div class="expired-icon">✅</div>
+    <h2 class="expired-title">Consultation Complete</h2>
+    <p class="expired-sub">Your video session has ended.<br>{% if is_patient %}Please take a moment to review your doctor.{% else %}The consultation has been recorded.{% endif %}</p>
+    {% if is_patient %}
+    <a href="/request/{{ req_id }}/feedback/" class="exit-btn">
+      <span class="material-icons">rate_review</span>
+      Provide Feedback & Complete Consultation
+    </a>
+    {% else %}
+    <a href="/doctor-dashboard/" class="exit-btn">
+      <span class="material-icons">home</span>
+      Return to Dashboard
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Jitsi External API -->
+  <script src="https://meet.jit.si/external_api.js"></script>
+  <script>
+    // --- Room ID Resolution ---
+    const container = document.getElementById('jitsi-container');
+    const pathParts  = window.location.pathname.split('/').filter(p => p !== '');
+    const roomID     = container.dataset.roomId || '{{ zego_room_id }}' || pathParts[pathParts.length - 1] || 'MediLok_Room';
+    const roomName   = 'MediLok_Consultation_' + roomID;
+
+    // --- Initialize Jitsi Meet ---
+    const api = new JitsiMeetExternalAPI('meet.jit.si', {
+      roomName: roomName,
+      width: '100%',
+      height: '100%',
+      parentNode: container,
+      configOverwrite: {
+        startWithAudioMuted: false,
+        startWithVideoMuted: false,
+        prejoinPageEnabled: false,
+        disableDeepLinking: true,
+        defaultRemoteDisplayName: 'Participant',
+      },
+      interfaceConfigOverwrite: {
+        TOOLBAR_BUTTONS: [
+          'microphone', 'camera', 'desktop', 'fullscreen',
+          'fodeviceselection', 'hangup', 'chat', 'recording',
+          'raisehand', 'videoquality', 'filmstrip', 'tileview',
+          'help', 'mute-everyone', 'security',
+        ],
+        SHOW_JITSI_WATERMARK: false,
+        SHOW_BRAND_WATERMARK: false,
+        DEFAULT_BACKGROUND: '#0a0a0f',
+      },
+      userInfo: {
+        displayName: 'MediLok User',
+      }
     });
-    </script>
 
+    const exitUrl = {% if is_patient %}"/request/{{ req_id }}/feedback/"{% else %}"/doctor-dashboard/"{% endif %};
+
+    // Redirect when participant leaves the call
+    api.addEventListener('videoConferenceLeft', () => {
+      window.location.href = exitUrl;
+    });
+  </script>
 </body>
 </html>

@@ -20,4 +20,21 @@ class PatientProfileForm(forms.ModelForm):
 class PatientReportForm(forms.ModelForm):
     class Meta:
         model = PatientReport
-        fields = ['user', 'dr_name', 'disease', 'precaution', 'medication']
+        fields = ['disease', 'precaution', 'medication']
+
+    def __init__(self, *args, **kwargs):
+        super(PatientReportForm, self).__init__(*args, **kwargs)
+        self.fields['disease'].widget = forms.TextInput(attrs={
+            'class': 'form-control border p-2 mb-3',
+            'placeholder': 'e.g. Type-2 Diabetes, Mild Pneumonia'
+        })
+        self.fields['precaution'].widget = forms.Textarea(attrs={
+            'class': 'form-control border p-2 mb-3',
+            'placeholder': 'Enter precautions and guidelines...',
+            'rows': 3
+        })
+        self.fields['medication'].widget = forms.Textarea(attrs={
+            'class': 'form-control border p-2 mb-3',
+            'placeholder': 'Enter prescribed medicines and dosage...',
+            'rows': 3
+        })

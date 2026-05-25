@@ -1,83 +1,232 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %} Swastya Shiksha {% endblock title %}
+{% block title %} Swastya Shiksha | MediLok {% endblock title %}
 
-{% block content %} 
-<div class="container">
-    <div class="row">
-        {% for topic in educational_topics %}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card">
-                <!-- Add onclick attribute to the card image -->
-                <div class="card-header p-0 mx-3 mt-3 position-relative z-index-1">
-                    <a href="javascript:;" class="d-block">
-                        <!-- Add an image if available -->
-                        <img src="{% static 'placeholder_image.jpg' %}" class="img-fluid border-radius-lg" id="thumbnail{{ topic.id }}" onclick="openYoutubeVideo('{{ topic.url }}', '{{ topic.topic }}', '{{ topic.id }}')">
-                    </a>
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ topic.topic }}</h5>
-                    <p class="card-text">{{ videoTitle }}</p> <!-- Display the video title here -->
-                </div>
+{% block content %}
+<style>
+  /* Premium Design System & Micro-animations */
+  .hero-gradient {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #c084fc 100%);
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2);
+  }
+  
+  .education-card {
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: none;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+    cursor: pointer;
+  }
+  
+  .education-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .thumbnail-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    aspect-ratio: 16/9;
+  }
+  
+  .thumbnail-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  
+  .education-card:hover .thumbnail-img {
+    transform: scale(1.08);
+  }
+  
+  .play-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  
+  .education-card:hover .play-overlay {
+    opacity: 1;
+  }
+  
+  .play-button-ring {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 8px 25px rgba(244, 63, 94, 0.5);
+    transform: scale(0.7);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  .education-card:hover .play-button-ring {
+    transform: scale(1);
+  }
+
+  .badge-tag {
+    background: rgba(124, 58, 237, 0.1);
+    color: #7c3aed;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+</style>
+
+<div class="container-fluid py-4 px-2 px-md-4">
+  
+  <!-- Sleek animated hero banner -->
+  <div class="hero-gradient p-5 mb-5 text-white position-relative overflow-hidden text-center text-md-start">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <span class="badge bg-light text-primary mb-3 px-3 py-2 font-weight-bold shadow-sm">HEALTH EDUCATION</span>
+        <h1 class="text-white font-weight-bolder mb-2" style="font-family: 'Outfit', sans-serif;">Swastya Shiksha Portal</h1>
+        <p class="lead opacity-9 mb-0">Learn essential health tips, prevention methods, and medical guidelines curated by our specialist doctors in high-definition video formats.</p>
+      </div>
+      <div class="col-lg-5 text-center d-none d-lg-block">
+        <i class="material-icons text-white opacity-8" style="font-size: 150px;">menu_book</i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video list section -->
+  <div class="row g-4">
+    {% for topic in educational_topics %}
+    <div class="col-xl-4 col-md-6">
+      <div class="card education-card shadow-sm h-100 p-3" data-url="{{ topic.url }}" data-topic="{{ topic.topic }}" data-id="{{ topic.id }}" onclick="openYoutubeVideo(this)">
+        
+        <div class="thumbnail-container">
+          <img src="" class="thumbnail-img" id="thumbnail{{ topic.id }}" alt="{{ topic.topic }}">
+          <div class="play-overlay">
+            <div class="play-button-ring">
+              <i class="material-icons style-fill text-white" style="font-size: 32px;">play_arrow</i>
             </div>
+          </div>
         </div>
+
+        <div class="card-body px-0 pb-0 pt-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="badge-tag">Interactive Lesson</span>
+            <span class="text-xs text-muted d-flex align-items-center">
+              <i class="material-icons text-xs me-1">ondemand_video</i> 10 min
+            </span>
+          </div>
+          <h5 class="card-title font-weight-bold text-dark mb-1" style="font-family: 'Outfit', sans-serif;">{{ topic.topic }}</h5>
+          <p class="text-xs text-muted mb-0">Click to watch high-quality medical tutorial and healthcare advice</p>
+        </div>
+
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+      <div class="p-4 bg-white border-radius-lg shadow-sm">
+        <i class="material-icons text-muted" style="font-size: 48px;">sentiment_dissatisfied</i>
+        <h5 class="mt-2 text-dark font-weight-bold">No Educational Content Found</h5>
+        <p class="text-muted mb-0">New health education guides are uploaded regularly. Please check back soon.</p>
+      </div>
+    </div>
     {% endfor %}
-    
-    </div>
+  </div>
+
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="videoModal" tabindex="-1" role="dialog" aria-labelledby="videoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="videoModalLabel"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" style="height: 500px;"> <!-- Adjust the height as per your requirement -->
-                <div class="embed-responsive embed-responsive-16by9" style="height: 100%;">
-                    <iframe id="videoIframe" class="embed-responsive-item" src="" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>
-                </div>
-            </div>
+<!-- Standard Bootstrap 5 Video Modal -->
+<div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 border-radius-xl shadow-lg overflow-hidden">
+      <div class="modal-header bg-gradient-primary text-white border-0 py-3">
+        <h5 class="modal-title font-weight-bold text-white d-flex align-items-center gap-2" id="videoModalLabel">
+          <i class="material-icons">movie</i> Health Video
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0" style="background-color: #000;">
+        <div class="ratio ratio-16x9">
+          <iframe id="videoIframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
-
-<!-- Include necessary JavaScript libraries -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
+<!-- Scripts: Pure Vanilla JS only (no jQuery needed) -->
 <script>
-    // Function to open YouTube video in the modal
-    function openYoutubeVideo(videoUrl, topicId) {
-        var videoId = videoUrl.split('v=')[1];
-        var videoTitle = decodeURIComponent(videoUrl.split('v=')[0].split('/').pop().replace(/\+/g, ' '));
-        $("#videoTitle" + topicId).text(videoTitle); // Set the title in the card body
-        var youtubeUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-        $("#videoIframe").attr("src", youtubeUrl);
-        $("#videoModalLabel").text(videoTitle); // Set the title in the modal header
-        $("#videoModal").modal('show');
+  // Helper: extract YouTube video ID from any YouTube URL format
+  function getYoutubeId(url) {
+    if (!url) return null;
+    let regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    let match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  }
+
+  // On DOM ready: load HD thumbnails and bind modal close handler
+  document.addEventListener('DOMContentLoaded', function() {
+    {% for topic in educational_topics %}
+    (function(){
+      let ytid = getYoutubeId("{{ topic.url }}");
+      let img = document.getElementById("thumbnail{{ topic.id }}");
+      if (img) {
+        img.src = ytid
+          ? "https://img.youtube.com/vi/" + ytid + "/maxresdefault.jpg"
+          : "/static/assets/img/logo-ct.png";
+        // Fallback to hqdefault if maxresdefault fails (grey image)
+        img.onerror = function() {
+          this.src = ytid
+            ? "https://img.youtube.com/vi/" + ytid + "/hqdefault.jpg"
+            : "/static/assets/img/logo-ct.png";
+        };
+      }
+    })();
+    {% endfor %}
+
+    // Stop video when modal is closed
+    let modalEl = document.getElementById('videoModal');
+    if (modalEl) {
+      modalEl.addEventListener('hidden.bs.modal', function() {
+        let iframe = document.getElementById('videoIframe');
+        if (iframe) iframe.src = '';
+      });
     }
-    // Function to pause the video and reset the iframe source
-    function pauseVideo() {
-        $('#videoIframe').attr('src', '');
+  });
+
+  // Open YouTube video in Bootstrap 5 modal
+  function openYoutubeVideo(element) {
+    let videoUrl   = element.getAttribute("data-url");
+    let topicTitle = element.getAttribute("data-topic") || "Health Video";
+
+    let videoId = getYoutubeId(videoUrl);
+    if (!videoId) {
+      alert("Could not load video. Invalid URL.");
+      return;
     }
 
-    // Function to get YouTube video thumbnail URL
-    function getThumbnailUrl(videoUrl) {
-        var videoId = videoUrl.split('v=')[1];
-        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-    }
+    // Update modal title
+    let labelEl = document.getElementById("videoModalLabel");
+    if (labelEl) labelEl.innerHTML = '<i class="material-icons me-2" style="vertical-align:middle;">movie</i>' + topicTitle;
 
-    // Call the getThumbnailUrl function when the page loads
-    $(document).ready(function() {
-        {% for topic in educational_topics %}
-            var thumbnailUrl = getThumbnailUrl("{{ topic.url }}");
-            $("#thumbnail{{ topic.id }}").attr("src", thumbnailUrl);
-        {% endfor %}
-    });
+    // Set iframe src with autoplay
+    let embedUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&modestbranding=1&rel=0";
+    let iframe = document.getElementById("videoIframe");
+    if (iframe) iframe.src = embedUrl;
+
+    // Show Bootstrap 5 modal using native API
+    let modalEl = document.getElementById('videoModal');
+    let myModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    myModal.show();
+  }
 </script>
 {% endblock %}

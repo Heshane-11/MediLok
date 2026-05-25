@@ -1,59 +1,258 @@
+{% extends 'base.html' %}
 {% load static %}
+{% block title %}Patient Portal | MediLok{% endblock title %}
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+{% block content %}
+<style>
+  :root {
+    --accent: #6366f1;
+    --accent-glow: rgba(99,102,241,0.25);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --card-bg: rgba(255,255,255,0.95);
+  }
 
-<div class="container mt-4">
+  .portal-hero {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #a78bfa 100%);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(99,102,241,0.3);
+  }
 
-  <h3 class="mb-4">📄 My Requests</h3>
+  .req-card {
+    background: var(--card-bg);
+    border-radius: 18px;
+    border: none;
+    backdrop-filter: blur(12px);
+    transition: transform 0.35s cubic-bezier(0.165,0.84,0.44,1), box-shadow 0.35s ease;
+    overflow: hidden;
+  }
+  .req-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.12) !important;
+  }
 
+  .req-card .card-left-bar {
+    width: 5px;
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+  .bar-pending  { background: var(--warning); }
+  .bar-accepted { background: var(--success); }
+  .bar-rejected { background: var(--danger);  }
+  .bar-completed { background: #3b82f6; }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 5px 14px;
+    border-radius: 99px;
+    letter-spacing: 0.5px;
+  }
+  .pill-pending  { background: rgba(245,158,11,0.12); color: #d97706; }
+  .pill-accepted { background: rgba(16,185,129,0.12); color: #059669; }
+  .pill-rejected { background: rgba(239,68,68,0.12);  color: #dc2626; }
+  .pill-completed { background: rgba(59,130,246,0.12); color: #2563eb; }
+
+  .pulse-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    animation: pulseAnim 1.4s infinite;
+  }
+  @keyframes pulseAnim {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.4; transform:scale(1.5); }
+  }
+
+  .join-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    font-weight: 700;
+    padding: 10px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(16,185,129,0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .join-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(16,185,129,0.45);
+    color: #fff;
+  }
+
+  .timer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(239,68,68,0.08);
+    color: #dc2626;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-size: 0.85rem;
+  }
+
+  .empty-state {
+    background: rgba(255,255,255,0.9);
+    border-radius: 20px;
+    padding: 60px 40px;
+    text-align: center;
+  }
+
+  @keyframes fadeSlideIn {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .req-card { animation: fadeSlideIn 0.45s ease both; }
   {% for req in requests %}
-  <div class="card p-4 mb-3 shadow-sm rounded">
+  .req-card:nth-child({{ forloop.counter }}) { animation-delay: {{ forloop.counter0 }}00ms; }
+  {% endfor %}
+</style>
 
-    <h5>👨‍⚕️ Doctor: {{ req.doctor.doctor_name }}</h5>
+<div class="container-fluid py-4 px-2 px-md-4">
 
-    <p>
-      Status:
-      {% if req.status == 'pending' %}
-        <span class="badge bg-warning text-dark">Pending</span>
-
-      {% elif req.status == 'accepted' %}
-        <span class="badge bg-success">Accepted</span>
-
-      {% else %}
-        <span class="badge bg-danger">Rejected</span>
-      {% endif %}
-    </p>
-
-    {% if req.status == 'accepted' %}
-
-      <div class="alert alert-success">
-        ✅ Doctor accepted your request<br>
-        ⏳ Join within 10 minutes
+  <!-- Hero Banner -->
+  <div class="portal-hero p-5 mb-5 text-white text-center text-md-start">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <span class="badge bg-white text-primary mb-3 px-3 py-2 fw-bold shadow-sm">PATIENT PORTAL</span>
+        <h1 class="text-white fw-bolder mb-2" style="font-family:'Outfit',sans-serif;">My Consultations</h1>
+        <p class="opacity-9 mb-0">Track the status of your doctor consultation requests in real time. Join accepted video calls directly from here.</p>
       </div>
+      <div class="col-md-4 text-center d-none d-md-block">
+        <i class="material-icons text-white opacity-7" style="font-size:120px;">medical_information</i>
+      </div>
+    </div>
+  </div>
 
-      {% if not req.joined %}
-        {% if req.call_type == 'video' %}
-          <a href="/video_call/{{ req.doctor.id }}/?roomID={{ req.id }}"
-             class="btn btn-success">
-            🎥 Join Video Call
-          </a>
-        {% else %}
-          <a href="tel:{{ req.doctor.doctor_phone_number }}"
-             class="btn btn-primary">
-            📞 Call Doctor
-          </a>
-        {% endif %}
-      {% else %}
-        <div class="alert alert-info mt-2">
-          🎥 Call already started — continue
+  <!-- Request Cards -->
+  {% for req in requests %}
+  <div class="card req-card shadow mb-4">
+    <div class="d-flex">
+
+      <!-- Color bar -->
+      <div class="card-left-bar {% if req.status == 'pending' %}bar-pending{% elif req.status == 'accepted' %}bar-accepted{% elif req.status == 'completed' %}bar-completed{% else %}bar-rejected{% endif %}"></div>
+
+      <div class="p-4 flex-grow-1">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+
+          <!-- Left info -->
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <i class="material-icons text-primary" style="font-size:22px;">person</i>
+              <h5 class="mb-0 fw-bold text-dark">Dr. {{ req.doctor.doctor_name }}</h5>
+            </div>
+            <p class="text-muted mb-2 text-sm">
+              {% if req.call_type == 'video' %}
+                <i class="material-icons" style="font-size:15px;vertical-align:middle;">videocam</i> Video Consultation
+              {% else %}
+                <i class="material-icons" style="font-size:15px;vertical-align:middle;">phone</i> Phone Consultation
+              {% endif %}
+            </p>
+
+            <!-- Status Pill -->
+            {% if req.status == 'pending' %}
+              <span class="status-pill pill-pending">
+                <span class="pulse-dot" style="background:#d97706;"></span>
+                Awaiting Doctor Response
+              </span>
+            {% elif req.status == 'accepted' %}
+              <span class="status-pill pill-accepted">
+                <span class="pulse-dot" style="background:#059669;"></span>
+                Accepted — Ready to Join
+              </span>
+            {% elif req.status == 'completed' %}
+              <span class="status-pill pill-completed">
+                <i class="material-icons" style="font-size:14px;vertical-align:middle;">check_circle</i>
+                Completed Successfully
+              </span>
+            {% elif req.status == 'rejected' %}
+              <span class="status-pill pill-rejected">
+                <i class="material-icons" style="font-size:14px;">cancel</i>
+                Rejected
+              </span>
+              {% if req.rejection_reason %}
+              <p class="text-danger mt-2 mb-0 text-sm"><strong>Reason:</strong> {{ req.rejection_reason }}</p>
+              {% endif %}
+            {% endif %}
+          </div>
+
+          <!-- Right actions -->
+          <div class="text-end">
+            {% if req.status == 'accepted' %}
+              {% if req.remaining_seconds > 0 %}
+              <div class="timer-badge mb-3" id="timer-{{ req.id }}">
+                <i class="material-icons" style="font-size:16px;">timer</i>
+                <span id="time-{{ req.id }}">--:--</span> remaining
+              </div>
+              <script>
+                (function(){
+                  var s = {{ req.remaining_seconds }};
+                  var el = document.getElementById("time-{{ req.id }}");
+                  function tick() {
+                    if (s <= 0) { el.innerText = "EXPIRED"; return; }
+                    var m = Math.floor(s/60), sec = s%60;
+                    el.innerText = m + ":" + (sec<10?"0":"") + sec;
+                    s--;
+                  }
+                  setInterval(tick, 1000); tick();
+                })();
+              </script>
+              {% endif %}
+
+              {% if req.call_type == 'video' %}
+              <a href="{% url 'video_call_with_doctor' req.id %}" class="join-btn">
+                <i class="material-icons">videocam</i> Join Video Call
+              </a>
+              {% else %}
+              <a href="tel:{{ req.doctor.doctor_phone_number }}" class="join-btn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+                <i class="material-icons">phone</i> Call Doctor
+              </a>
+              {% endif %}
+            {% elif req.status == 'completed' %}
+              <span class="btn btn-outline-primary disabled fw-bold py-2 px-4 rounded-3 text-sm">
+                Completed
+              </span>
+            {% elif req.status == 'pending' %}
+              <div class="text-muted text-sm">
+                <i class="material-icons" style="font-size:15px;vertical-align:middle;">hourglass_empty</i>
+                Auto-refreshing…
+              </div>
+            {% endif %}
+          </div>
+
         </div>
-      {% endif %}
-
-    {% endif %}
-
+      </div>
+    </div>
   </div>
   {% empty %}
-    <p>No requests found.</p>
+  <div class="empty-state shadow-sm">
+    <i class="material-icons text-muted" style="font-size:64px;">inbox</i>
+    <h4 class="mt-3 fw-bold text-dark">No Consultations Yet</h4>
+    <p class="text-muted mb-4">You haven't sent any doctor consultation requests yet. Browse our specialists below.</p>
+    <a href="{% url 'doctor_list' %}" class="btn bg-gradient-primary text-white px-4 py-2 shadow-sm">
+      <i class="material-icons me-1" style="font-size:18px;vertical-align:middle;">search</i>
+      Find a Doctor
+    </a>
+  </div>
   {% endfor %}
 
 </div>
+
+<!-- Auto-refresh every 10s for pending status updates -->
+<script>
+  // Only refresh if there is a pending request
+  {% for req in requests %}
+    {% if req.status == 'pending' %}
+    setTimeout(function(){ location.reload(); }, 10000);
+    {% endif %}
+  {% endfor %}
+</script>
+
+{% endblock %}

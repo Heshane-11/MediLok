@@ -1,83 +1,227 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block title %}Doctor Portal | MediLok{% endblock title %}
 
 {% block content %}
+<style>
+  :root {
+    --teal: #0d9488;
+    --teal-light: rgba(13,148,136,0.12);
+    --indigo: #6366f1;
+    --amber: #f59e0b;
+    --red: #ef4444;
+  }
 
-<div class="container mt-4">
+  .portal-hero-doc {
+    background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #2dd4bf 100%);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(13,148,136,0.3);
+  }
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3>📩 Consultation Requests</h3>
+  .req-card-doc {
+    background: rgba(255,255,255,0.97);
+    border-radius: 18px;
+    border: none;
+    overflow: hidden;
+    transition: transform 0.35s cubic-bezier(0.165,0.84,0.44,1), box-shadow 0.35s ease;
+  }
+  .req-card-doc:hover { transform: translateY(-5px); box-shadow: 0 18px 44px rgba(0,0,0,0.12) !important; }
+
+  .left-accent { width: 6px; border-radius: 99px; flex-shrink: 0; }
+  .accent-pending  { background: var(--amber); }
+  .accent-accepted { background: var(--teal); }
+  .accent-rejected { background: var(--red); }
+  .accent-completed { background: #3b82f6; }
+
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-weight: 700; font-size: 0.75rem;
+    padding: 5px 14px; border-radius: 99px; letter-spacing: .4px;
+  }
+  .badge-pending  { background: rgba(245,158,11,.12); color: #b45309; }
+  .badge-accepted { background: rgba(13,148,136,.12);  color: #0f766e; }
+  .badge-rejected { background: rgba(239,68,68,.12);   color: #b91c1c; }
+  .badge-completed { background: rgba(59,130,246,.12);  color: #2563eb; }
+
+  .btn-accept {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; font-weight: 700; padding: 9px 20px; border-radius: 10px;
+    text-decoration: none; border: none; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16,185,129,.35);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-accept:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,.45); color:#fff; }
+
+  .btn-reject {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff; font-weight: 700; padding: 9px 20px; border-radius: 10px;
+    text-decoration: none; border: none; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(239,68,68,.3);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-reject:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239,68,68,.4); color:#fff; }
+
+  .btn-join {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff; font-weight: 700; padding: 9px 22px; border-radius: 10px;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(99,102,241,.35);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-join:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99,102,241,.45); color:#fff; }
+
+  .timer-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(239,68,68,.08); color: #dc2626;
+    font-weight: 700; padding: 5px 14px; border-radius: 99px; font-size:.84rem;
+  }
+
+  .info-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(99,102,241,.08); color: #4f46e5;
+    font-size: .8rem; font-weight: 600; padding: 4px 12px; border-radius: 99px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(18px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .req-card-doc { animation: fadeUp 0.4s ease both; }
+</style>
+
+<div class="container-fluid py-4 px-2 px-md-4">
+
+  <!-- Hero Banner -->
+  <div class="portal-hero-doc p-5 mb-5 text-white text-center text-md-start">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <span class="badge bg-white text-success mb-3 px-3 py-2 fw-bold shadow-sm">DOCTOR PORTAL</span>
+        <h1 class="text-white fw-bolder mb-2" style="font-family:'Outfit',sans-serif;">Consultation Requests</h1>
+        <p class="opacity-9 mb-0">Review, accept, or reject patient consultation requests. Start video sessions from your portal.</p>
+      </div>
+      <div class="col-md-4 text-center d-none d-md-block">
+        <i class="material-icons text-white opacity-7" style="font-size:120px;">assignment_ind</i>
+      </div>
+    </div>
   </div>
 
+  <!-- Request Cards -->
   {% for req in requests %}
-  <div class="card p-4 mb-3 shadow-sm border-0">
+  <div class="card req-card-doc shadow mb-4">
+    <div class="d-flex">
 
-    <div class="row align-items-center">
+      <!-- Color accent bar -->
+      <div class="left-accent {% if req.status == 'pending' %}accent-pending{% elif req.status == 'accepted' %}accent-accepted{% elif req.status == 'completed' %}accent-completed{% else %}accent-rejected{% endif %}"></div>
 
-      <!-- LEFT SIDE -->
-      <div class="col-md-8">
-        <h5 class="mb-2">
-          👤 Patient: {{ req.patient.user.first_name }}
-        </h5>
+      <div class="p-4 flex-grow-1">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
 
-        <p class="mb-1">
-          👨‍⚕️ Doctor: {{ req.doctor.doctor_name }}
-        </p>
+          <!-- Patient Info -->
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <i class="material-icons text-primary" style="font-size:22px;">person</i>
+              <h5 class="mb-0 fw-bold text-dark">{{ req.patient.user.first_name }} {{ req.patient.user.last_name }}</h5>
+            </div>
 
-        <p class="mb-1">
-          📞 Call Type: 
-          {% if req.call_type == 'video' %}
-            🎥 Video Call
-          {% else %}
-            📱 Voice Call
-          {% endif %}
-        </p>
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              <span class="info-chip">
+                {% if req.call_type == 'video' %}
+                  <i class="material-icons" style="font-size:14px;">videocam</i> Video Call
+                {% else %}
+                  <i class="material-icons" style="font-size:14px;">phone</i> Voice Call
+                {% endif %}
+              </span>
+              <span class="info-chip">
+                <i class="material-icons" style="font-size:14px;">local_hospital</i> {{ req.doctor.doctor_name }}
+              </span>
+            </div>
 
-        <p class="mb-0">
-          Status:
-          {% if req.status == 'pending' %}
-            <span class="badge bg-warning text-dark">Pending</span>
-          {% elif req.status == 'accepted' %}
-            <span class="badge bg-success">Accepted</span>
-          {% else %}
-            <span class="badge bg-danger">Rejected</span>
-          {% endif %}
-        </p>
+            <!-- Status Badge -->
+            {% if req.status == 'pending' %}
+              <span class="status-badge badge-pending">
+                <i class="material-icons" style="font-size:14px;">schedule</i> Pending
+              </span>
+            {% elif req.status == 'accepted' %}
+              <span class="status-badge badge-accepted">
+                <i class="material-icons" style="font-size:14px;">check_circle</i> Accepted
+              </span>
+            {% elif req.status == 'completed' %}
+              <span class="status-badge badge-completed">
+                <i class="material-icons" style="font-size:14px;">verified</i> Completed
+              </span>
+            {% else %}
+              <span class="status-badge badge-rejected">
+                <i class="material-icons" style="font-size:14px;">cancel</i> Rejected
+              </span>
+            {% endif %}
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex flex-column align-items-end gap-2">
+            {% if req.status == 'pending' %}
+              <div class="d-flex gap-2">
+                <a href="{% url 'accept_request' req.id %}" class="btn-accept">
+                  <i class="material-icons" style="font-size:18px;">check_circle</i> Accept
+                </a>
+                <a href="{% url 'reject_request' req.id %}" class="btn-reject">
+                  <i class="material-icons" style="font-size:18px;">cancel</i> Reject
+                </a>
+              </div>
+
+            {% elif req.status == 'accepted' %}
+              <span class="text-success fw-bold d-flex align-items-center gap-1">
+                <i class="material-icons" style="font-size:16px;">verified</i> Already Accepted
+              </span>
+              {% if req.remaining_seconds > 0 %}
+              <div class="timer-pill" id="timer-{{ req.id }}">
+                <i class="material-icons" style="font-size:15px;">timer</i>
+                <span id="time-{{ req.id }}">--:--</span>
+              </div>
+              <script>
+                (function(){
+                  var s = {{ req.remaining_seconds }};
+                  var el = document.getElementById("time-{{ req.id }}");
+                  function tick() {
+                    if (s <= 0) { el.innerText = "EXPIRED"; return; }
+                    var m = Math.floor(s/60), sec = s%60;
+                    el.innerText = m + "m " + (sec<10?"0":"") + sec + "s";
+                    s--;
+                  }
+                  setInterval(tick, 1000); tick();
+                })();
+              </script>
+              {% endif %}
+              <a href="{% url 'video_call_with_doctor' req.id %}" class="btn-join">
+                <i class="material-icons" style="font-size:18px;">video_call</i> Start Video Call
+              </a>
+
+            {% elif req.status == 'completed' %}
+              <span class="btn btn-outline-success disabled fw-bold py-2 px-4 rounded-3 text-sm">
+                Successful
+              </span>
+            {% else %}
+              <span class="text-danger fw-bold d-flex align-items-center gap-1">
+                <i class="material-icons" style="font-size:16px;">block</i> Rejected / Expired
+              </span>
+            {% endif %}
+          </div>
+
+        </div>
       </div>
-
-      <!-- RIGHT SIDE BUTTONS -->
-      <div class="col-md-4 text-md-end mt-3 mt-md-0">
-
-        {% if req.status == 'pending' %}
-          <a href="{% url 'accept_request' req.id %}" 
-             class="btn btn-success me-2">
-            ✅ Accept
-          </a>
-
-          <a href="{% url 'reject_request' req.id %}" 
-             class="btn btn-danger">
-            ❌ Reject
-          </a>
-        {% elif req.status == 'accepted' %}
-          <span class="text-success fw-bold">✔ Already Accepted</span>
-        {% else %}
-          <span class="text-danger fw-bold">✖ Rejected</span>
-        {% endif %}
-
-      </div>
-
     </div>
-
   </div>
   {% empty %}
-
-  <!-- EMPTY STATE -->
-  <div class="text-center mt-5">
-    <h5>No consultation requests yet 😴</h5>
-    <p class="text-muted">Requests from patients will appear here</p>
+  <div class="text-center py-5">
+    <div class="bg-white shadow-sm rounded-4 p-5 d-inline-block">
+      <i class="material-icons text-muted" style="font-size:64px;">hourglass_empty</i>
+      <h4 class="mt-3 fw-bold text-dark">No Consultation Requests Yet</h4>
+      <p class="text-muted">Patient requests will appear here once submitted.</p>
+    </div>
   </div>
-
   {% endfor %}
 
 </div>
-
 {% endblock %}

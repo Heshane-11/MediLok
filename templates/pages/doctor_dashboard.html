@@ -1,0 +1,222 @@
+{% extends 'base_react.html' %}
+{% load static %}
+{% block title %}Doctor Dashboard{% endblock %}
+{% block content %}
+<div id="react-app"></div>
+<script type="text/babel">
+{% verbatim %}
+    const { useState, useEffect } = React;
+
+    // ── Inline SVG Icons (no CDN needed) ─────────────────────────────────
+    const Svg = ({ size=20, className="", children }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+             strokeLinejoin="round" className={className}>{children}</svg>
+    );
+    const Check        = p => <Svg {...p}><polyline points="20 6 9 17 4 12"/></Svg>;
+    const CheckCircle  = p => <Svg {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Svg>;
+    const ChevronRight = p => <Svg {...p}><polyline points="9 18 15 12 9 6"/></Svg>;
+    const Clock        = p => <Svg {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></Svg>;
+    const FileText     = p => <Svg {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></Svg>;
+    const LogOut       = p => <Svg {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Svg>;
+    const Power        = p => <Svg {...p}><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></Svg>;
+    const Stethoscope  = p => <Svg {...p}><circle cx="12" cy="12" r="4"/><path d="M16 12v1a4 4 0 0 0 8 0v-3"/><path d="M20 8.5V7a8 8 0 1 0-16 0v6a8 8 0 0 0 8 8"/></Svg>;
+    const Users        = p => <Svg {...p}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></Svg>;
+    const Video        = p => <Svg {...p}><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></Svg>;
+    const X            = p => <Svg {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Svg>;
+
+    // ── Components ────────────────────────────────────────────────────────
+    const TopBar = ({ profile }) => (
+        <div className="bg-white shadow-sm px-6 py-4 flex justify-between items-center mb-8 rounded-b-xl border-b border-indigo-100">
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">Dr.</div>
+                <div>
+                    <h2 className="text-xl font-bold text-gray-800">Welcome, Dr. {profile.name}</h2>
+                    <p className="text-sm text-gray-500">Doctor Portal</p>
+                </div>
+            </div>
+            <a href="/logout" className="flex items-center gap-2 text-red-500 hover:text-red-700 font-medium transition">
+                <LogOut size={18} /> Logout
+            </a>
+        </div>
+    );
+
+    const ProfileCard = ({ profile, onToggle }) => (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center relative overflow-hidden">
+            <div className={`absolute top-0 left-0 w-full h-2 ${profile.is_available ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <div className="w-24 h-24 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center mb-4 shadow-md text-white mt-2">
+                <Stethoscope size={40} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800">Dr. {profile.name}</h3>
+            <p className="text-gray-500 mb-6">{profile.specialization}</p>
+            <button onClick={onToggle}
+                className={`w-full py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors ${profile.is_available ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'}`}>
+                <Power size={18} /> {profile.is_available ? 'Available for Calls' : 'Currently Busy'}
+            </button>
+            <div className="w-full border-t border-gray-100 pt-4 mt-6">
+                <a href="/profile" className="text-indigo-600 font-medium hover:text-indigo-800 flex items-center justify-center gap-1 text-sm">
+                    Edit Profile <ChevronRight size={16} />
+                </a>
+            </div>
+        </div>
+    );
+
+    const StatsRow = ({ stats }) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {[
+                { icon: <Users size={24}/>, label: 'Total Platform Patients', value: stats.total_patients, color: 'blue' },
+                { icon: <Clock size={24}/>,  label: 'Pending Requests',         value: stats.pending_requests, color: 'orange' },
+                { icon: <CheckCircle size={24}/>, label: "Completed Consultations", value: stats.completed_consultations, color: 'green' }
+            ].map(({ icon, label, value, color }) => (
+                <div key={label} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
+                    <div className={`w-12 h-12 bg-${color}-50 text-${color}-600 rounded-lg flex items-center justify-center`}>{icon}</div>
+                    <div>
+                        <p className="text-sm text-gray-500 font-medium">{label}</p>
+                        <h3 className="text-2xl font-bold text-gray-800">{value}</h3>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+
+    const IncomingRequests = ({ requests, onAccept, onReject, isLoading }) => (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <Clock size={20} className="text-orange-500" /> Incoming Consultation Requests
+                </h3>
+            </div>
+            <div className="divide-y divide-gray-100">
+                {requests.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                        <CheckCircle size={48} className="mx-auto text-green-300 mb-3" />
+                        <p>No pending requests right now.</p>
+                    </div>
+                ) : requests.map(req => (
+                    <div key={req.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                                <h4 className="font-bold text-gray-800 text-lg">{req.patient_name}</h4>
+                                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded capitalize">{req.call_type} Call</span>
+                                <span className="text-xs text-gray-400">{req.created_at}</span>
+                            </div>
+                            <div className="bg-orange-50 text-orange-800 p-3 rounded-lg text-sm border border-orange-100 flex gap-2 items-start">
+                                <FileText size={16} className="mt-0.5 flex-shrink-0" />
+                                <div><span className="font-bold block mb-1">AI Symptom Summary:</span>{req.symptom_summary}</div>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button onClick={() => onReject(req.id)} disabled={isLoading}
+                                className="px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-red-600 rounded-lg font-medium transition flex items-center gap-1 disabled:opacity-50">
+                                <X size={18} /> Reject
+                            </button>
+                            <button onClick={() => onAccept(req.id)} disabled={isLoading}
+                                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold flex items-center gap-1 disabled:opacity-50 transition">
+                                <Check size={18} /> Accept &amp; Start
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    const ActiveConsultations = ({ consultations }) => (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <Video size={20} className="text-green-500" /> Active Video Sessions
+                </h3>
+            </div>
+            <div className="divide-y divide-gray-100">
+                {consultations.map(req => (
+                    <div key={req.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-green-50/30">
+                        <div>
+                            <h4 className="font-bold text-gray-800 text-lg">Patient: {req.patient_name}</h4>
+                            <span className="text-sm text-green-600 font-medium flex items-center gap-2 mt-1">
+                                <span className="w-2 h-2 bg-green-500 rounded-full inline-block animate-pulse"></span> Waiting for you to join
+                            </span>
+                        </div>
+                        <a href={`/video_call/${req.id}/`}
+                            className="bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-colors">
+                            <Video size={18} /> Join Call Room
+                        </a>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    // ── Main App ──────────────────────────────────────────────────────────
+    const DoctorDashboard = () => {
+        const [data, setData]         = useState(null);
+        const [isLoading, setLoading] = useState(false);
+        const [error, setError]       = useState(null);
+
+        useEffect(() => { if (window.dashboardData) setData(window.dashboardData); }, []);
+
+        const call = async (url, onSuccess) => {
+            setLoading(true);
+            try {
+                const res  = await fetch(url, { method: 'POST', headers: { 'X-CSRFToken': window.csrfToken } });
+                const json = await res.json();
+                if (json.success) onSuccess(json);
+                else setError(json.message || 'Something went wrong');
+            } catch { setError('Failed to connect to server'); }
+            setLoading(false);
+        };
+
+        const handleToggle  = () => call('/api/toggle-availability/', j =>
+            setData(p => ({ ...p, profile: { ...p.profile, is_available: j.data.is_available } })));
+
+        const handleAccept  = id => call(`/api/request/${id}/accept/`, () => window.location.reload());
+
+        const handleReject  = id => call(`/api/request/${id}/reject/`, () =>
+            setData(p => ({ ...p,
+                pending_requests: p.pending_requests.filter(r => r.id !== id),
+                stats: { ...p.stats, pending_requests: p.stats.pending_requests - 1 }
+            })));
+
+        if (!data) return (
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <p className="text-gray-400 text-sm">Loading dashboard…</p>
+            </div>
+        );
+
+        return (
+            <div className="min-h-screen pb-12 bg-gray-50">
+                <TopBar profile={data.profile} />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {error && (
+                        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-100 flex items-center justify-between">
+                            {error} <button onClick={() => setError(null)}><X size={18} /></button>
+                        </div>
+                    )}
+                    <div className="flex flex-col lg:flex-row gap-8">
+                        <div className="w-full lg:w-1/4">
+                            <ProfileCard profile={data.profile} onToggle={handleToggle} />
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-6">
+                                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <FileText size={18} className="text-indigo-500" /> Patient Records
+                                </h3>
+                                <ul className="space-y-3">
+                                    <li><a href="/patient_list" className="text-gray-600 hover:text-indigo-600 transition flex items-center gap-2 text-sm"><ChevronRight size={14}/> View All Patients</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="w-full lg:w-3/4">
+                            <StatsRow stats={data.stats} />
+                            {data.active_consultations.length > 0 && <ActiveConsultations consultations={data.active_consultations} />}
+                            <IncomingRequests requests={data.pending_requests} onAccept={handleAccept} onReject={handleReject} isLoading={isLoading} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    ReactDOM.createRoot(document.getElementById('react-app')).render(<DoctorDashboard />);
+{% endverbatim %}
+</script>
+{% endblock %}

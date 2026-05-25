@@ -1,28 +1,177 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block title %}Request Sent | MediLok{% endblock %}
 
 {% block content %}
+<style>
+  .success-page {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-<div class="container mt-5 text-center">
+  .success-card {
+    background: rgba(255,255,255,0.98);
+    border-radius: 28px;
+    box-shadow: 0 16px 50px rgba(0,0,0,0.12);
+    padding: 60px 48px;
+    text-align: center;
+    max-width: 520px;
+    width: 100%;
+    animation: successPop 0.7s cubic-bezier(0.175,0.885,0.32,1.275) both;
+    position: relative;
+    overflow: hidden;
+  }
+  .success-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #10b981, #6366f1, #f59e0b);
+  }
 
-  <div class="card p-5 shadow-lg">
+  @keyframes successPop {
+    from { opacity:0; transform: scale(0.85) translateY(20px); }
+    to   { opacity:1; transform: scale(1) translateY(0); }
+  }
 
-    <h2 class="text-success">✅ Request Sent</h2>
+  .check-circle {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    box-shadow: 0 8px 28px rgba(16,185,129,0.45);
+    animation: checkBounce 0.6s 0.3s cubic-bezier(0.175,0.885,0.32,1.275) both;
+  }
+  @keyframes checkBounce {
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
+  }
 
-    <p class="mt-3">
-      Your request has been sent to  
-      <strong>Dr. {{ doctor.doctor_name }}</strong>
-    </p>
+  .success-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 12px;
+    font-family: 'Outfit', sans-serif;
+  }
 
-    <p>Please wait for doctor approval.</p>
+  .success-sub {
+    color: #64748b;
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
 
-    <div class="mt-4">
-      <a href="{% url 'doctor_list' %}" class="btn btn-primary">
-        🔙 Back to Doctors
-      </a>
+  .doctor-name-highlight {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(16,185,129,0.1);
+    color: #059669;
+    font-weight: 700;
+    padding: 8px 18px;
+    border-radius: 99px;
+    margin: 12px auto 24px;
+  }
+
+  .status-info {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 16px 20px;
+    text-align: left;
+    margin-bottom: 28px;
+  }
+  .status-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.87rem; color: #475569; padding: 5px 0;
+  }
+  .status-row .material-icons { color: #10b981; font-size: 18px; }
+
+  .action-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  .btn-primary-action {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; font-weight: 700; padding: 12px 26px;
+    border-radius: 12px; text-decoration: none;
+    box-shadow: 0 4px 14px rgba(16,185,129,0.4);
+    transition: transform .2s, box-shadow .2s; font-size: 0.9rem;
+  }
+  .btn-primary-action:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(16,185,129,0.5); color:#fff; }
+
+  .btn-secondary-action {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #f1f5f9; color: #475569; font-weight: 700;
+    padding: 12px 22px; border-radius: 12px; text-decoration: none;
+    border: 2px solid #e2e8f0;
+    transition: all .2s; font-size: 0.9rem;
+  }
+  .btn-secondary-action:hover { background: #e2e8f0; color: #334155; }
+
+  /* Confetti dots decoration */
+  .confetti-dot {
+    position: absolute; border-radius: 50%; opacity: 0.5;
+    animation: floatDot 3s ease-in-out infinite;
+  }
+  @keyframes floatDot {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-12px) rotate(180deg); }
+  }
+</style>
+
+<div class="container-fluid py-4 px-2 px-md-4">
+  <div class="success-page">
+    <div class="success-card">
+
+      <!-- Decorative dots -->
+      <div class="confetti-dot" style="width:12px;height:12px;background:#6366f1;top:18px;right:30px;animation-delay:0s;"></div>
+      <div class="confetti-dot" style="width:8px;height:8px;background:#f59e0b;top:50px;left:25px;animation-delay:.7s;"></div>
+      <div class="confetti-dot" style="width:10px;height:10px;background:#10b981;bottom:30px;right:40px;animation-delay:1.4s;"></div>
+
+      <!-- Success Icon -->
+      <div class="check-circle">
+        <i class="material-icons text-white" style="font-size:44px;">check</i>
+      </div>
+
+      <h2 class="success-title">Request Sent! 🎉</h2>
+
+      <p class="success-sub">Your consultation request has been successfully sent to:</p>
+
+      <div class="doctor-name-highlight">
+        <i class="material-icons" style="font-size:18px;">local_hospital</i>
+        Dr. {{ doctor.doctor_name }}
+      </div>
+
+      <!-- Status info -->
+      <div class="status-info">
+        <div class="status-row">
+          <i class="material-icons">schedule</i>
+          <span>The doctor will review and accept your request shortly</span>
+        </div>
+        <div class="status-row">
+          <i class="material-icons">notifications_active</i>
+          <span>You'll see the updated status in your Patient Portal</span>
+        </div>
+        <div class="status-row">
+          <i class="material-icons">video_call</i>
+          <span>Once accepted, a video/voice call link will be ready for you</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-btns">
+        <a href="{% url 'my_requests' %}" class="btn-primary-action">
+          <i class="material-icons" style="font-size:18px;">inbox</i>
+          Track My Request
+        </a>
+        <a href="{% url 'doctor_list' %}" class="btn-secondary-action">
+          <i class="material-icons" style="font-size:18px;">arrow_back</i>
+          Back to Doctors
+        </a>
+      </div>
+
     </div>
-
   </div>
-
 </div>
 
 {% endblock %}
