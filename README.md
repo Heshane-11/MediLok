@@ -6,6 +6,8 @@
 
 **Bridging patients and doctors through intelligent, real-time virtual care**
 
+🔗 **[Live Website](https://medilok.onrender.com/)**
+
 ![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python)
 ![Django](https://img.shields.io/badge/Django-4.x-092E20?style=flat-square&logo=django)
 ![Groq](https://img.shields.io/badge/AI-LLaMA%203.1%20via%20Groq-orange?style=flat-square)
@@ -187,6 +189,44 @@ python manage.py runserver
 ```
 
 Visit `http://127.0.0.1:8000` in your browser.
+
+---
+
+## 🚀 Production Deployment (Render + Neon.tech)
+
+MediLok is fully configured for production deployment using **Render** (for hosting the Django web server) and **Neon.tech** (for a permanently free serverless PostgreSQL database).
+
+### 1. Database Setup (Neon.tech)
+1. Sign up/log in at [Neon.tech](https://neon.tech/).
+2. Create a new project named `medilok` (recommended region: `AWS US East (N. Virginia)` or `Asia Pacific (Singapore)`).
+3. Copy the **Connection String** (`postgresql://...`). This is your production `DATABASE_URL`.
+
+### 2. Web Service Setup (Render)
+1. Sign up/log in at [Render.com](https://render.com/) using your GitHub account.
+2. Click **New +** and select **Web Service**.
+3. Connect this `MediLok` repository.
+4. Fill in the following configuration details:
+   - **Name**: `medilok`
+   - **Region**: Select a region close to your database (e.g., `Ohio (us-east-2)` or `Singapore`).
+   - **Runtime**: `Python`
+   - **Build Command**: `./build.sh`
+   - **Start Command**: `gunicorn bitnbuild.wsgi --bind 0.0.0.0:$PORT`
+   - **Instance Type**: `Free`
+
+5. Click **Advanced** and add the following **Environment Variables**:
+   - `PYTHON_VERSION` ➡️ `3.11.9` (Forces Render to use a stable Python version compatible with Pillow)
+   - `DATABASE_URL` ➡️ `<Your Neon Connection String>`
+   - `SECRET_KEY` ➡️ `<A secure production secret key>`
+   - `DEBUG` ➡️ `False`
+   - `ALLOWED_HOSTS` ➡️ `*`
+   - `GOOGLE_CLIENT_ID` ➡️ `<Your Google OAuth Client ID>`
+   - `GOOGLE_CLIENT_SECRET` ➡️ `<Your Google OAuth Client Secret>`
+   - `TWILIO_SID` ➡️ `<Your Twilio SID>`
+   - `TWILIO_AUTH_TOKEN` ➡️ `<Your Twilio Auth Token>`
+   - `TWILIO_PHONE_NUMBER` ➡️ `<Your Twilio phone number>`
+   - `GROQ_API_KEY` ➡️ `<Your Groq API key>`
+
+6. Click **Deploy Web Service**. Render will run the `build.sh` script (which auto-runs database migrations and collects static assets) and deploy the application.
 
 ---
 
