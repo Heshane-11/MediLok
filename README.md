@@ -11,7 +11,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python)
 ![Django](https://img.shields.io/badge/Django-4.x-092E20?style=flat-square&logo=django)
 ![Groq](https://img.shields.io/badge/AI-LLaMA%203.1%20via%20Groq-orange?style=flat-square)
-![ZEGOCLOUD](https://img.shields.io/badge/Video-ZEGOCLOUD-blueviolet?style=flat-square)
+![Jitsi](https://img.shields.io/badge/Video-Jitsi%20Meet-blueviolet?style=flat-square)
 ![Twilio](https://img.shields.io/badge/SMS-Twilio-red?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
@@ -23,7 +23,7 @@
 
 **MediLok** is a full-stack telemedicine platform that enables patients to consult with doctors remotely through real-time video calls, AI-assisted pre-diagnosis, and a structured consultation request workflow.
 
-At its core, MediLok integrates **Generative AI (LLaMA 3.1 via the Groq API)** to provide patients with intelligent, instant symptom analysis before connecting them with a verified doctor. The platform handles the entire consultation lifecycle — from request to video call — with SMS notifications powered by **Twilio** and real-time video powered by **ZEGOCLOUD**.
+At its core, MediLok integrates **Generative AI (LLaMA 3.1 via the Groq API)** to provide patients with intelligent, instant symptom analysis before connecting them with a verified doctor. The platform handles the entire consultation lifecycle — from request to video call — with SMS notifications powered by **Twilio** and real-time video powered by **Jitsi Meet**.
 
 > Built to reduce barriers to healthcare access by making quality medical consultation available from any device, anywhere.
 
@@ -34,7 +34,7 @@ At its core, MediLok integrates **Generative AI (LLaMA 3.1 via the Groq API)** t
 | Feature | Description |
 |---|---|
 | 🤖 **AI Doctor Chat** | LLaMA 3.1 (via Groq API) provides instant, context-aware responses to patient symptoms before a doctor is available |
-| 📹 **Video Consultation** | Real-time HD video and voice calls between patient and doctor powered by ZEGOCLOUD |
+| 📹 **Video Consultation** | Real-time HD video and voice calls between patient and doctor powered by Jitsi Meet |
 | 📋 **Consultation Requests** | Structured patient→doctor request workflow with accept/reject controls |
 | ⏱️ **10-Minute Join Window** | Auto-expiring session logic — consultations expire if either party doesn't join within 10 minutes of acceptance |
 | 📲 **SMS Notifications** | Automated Twilio SMS alerts sent to patients on request acceptance, rejection, and session start |
@@ -56,7 +56,7 @@ At its core, MediLok integrates **Generative AI (LLaMA 3.1 via the Groq API)** t
 
 ### Integrations & APIs
 - **Groq API** — LLaMA 3.1 8B model for generative AI responses
-- **ZEGOCLOUD** — real-time video/audio consultation infrastructure
+- **Jitsi Meet** — real-time video/audio consultation infrastructure
 - **Twilio** — programmable SMS for patient notifications
 - **Google OAuth 2.0** — authentication via `django-allauth`
 
@@ -80,7 +80,7 @@ Patient                        Platform                        Doctor
   │◀── SMS notification (Twilio) ─┤                               │
   │                               │                               │
   ├─── Joins video call ──────────▶│◀────── Joins video call ──────┤
-  │    (within 10-min window)      │         (ZEGOCLOUD)           │
+  │    (within 10-min window)      │        (Jitsi Meet)           │
   │                               │                               │
   └─── Consultation complete ─────▶│──── Session recorded ─────────▶
 ```
@@ -92,7 +92,7 @@ Patient                        Platform                        Doctor
 4. Doctor receives the request and **accepts or rejects** it
 5. Patient receives an **SMS notification** via Twilio with the outcome
 6. On acceptance, both parties have a **10-minute window** to join the video call
-7. Real-time **video/voice consultation** takes place via ZEGOCLOUD
+7. Real-time **video/voice consultation** takes place via Jitsi Meet
 8. Consultation history and reports are saved to the patient's profile
 
 ---
@@ -251,9 +251,7 @@ TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
 # Groq (Generative AI — LLaMA 3.1)
 GROQ_API_KEY=your_groq_api_key
 
-# ZEGOCLOUD (Video Calls)
-ZEGO_APP_ID=your_zego_app_id
-ZEGO_SERVER_SECRET=your_zego_server_secret
+# (Note: Video Calls are powered by Jitsi Meet and do not require external credentials in .env)
 ```
 
 > ⚠️ Never commit your `.env` file. It is listed in `.gitignore` by default.
@@ -269,7 +267,7 @@ ZEGO_SERVER_SECRET=your_zego_server_secret
 | `/chat_with_ai/` | AI Doctor Chat (LLaMA 3.1 via Groq) |
 | `/doctor_requests/` | Doctor dashboard — view incoming consultation requests |
 | `/my_requests/` | Patient dashboard — track sent requests and their status |
-| `/video_call/<id>/` | ZEGOCLOUD video consultation room for a specific session |
+| `/video_call/<id>/` | Jitsi Meet video consultation room for a specific session |
 | `/accounts/google/login/` | Google OAuth login |
 | `/admin/` | Django admin panel |
 
@@ -293,7 +291,7 @@ ZEGO_SERVER_SECRET=your_zego_server_secret
 
 ### 1. Real-Time Video Communication
 **Challenge:** Establishing low-latency, reliable video sessions between patients and doctors without building custom WebRTC infrastructure.  
-**Solution:** Integrated **ZEGOCLOUD SDK**, which handles signaling, TURN/STUN servers, and session management out of the box. Session tokens are generated server-side using ZEGO's token API, ensuring each call is authenticated and scoped to a unique consultation ID.
+**Solution:** Integrated **Jitsi Meet**, which is a free, secure, and open-source video conferencing API. It allows seamless in-browser video calling without complex backend keys, tokens, or configuration.
 
 ### 2. 10-Minute Join Window Logic
 **Challenge:** Preventing ghost sessions where one party accepts but never joins, leaving the other waiting indefinitely.  

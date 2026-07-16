@@ -327,18 +327,6 @@
     }
   });
 
-  // Auto-speak AI response
-  {% if response %}
-  (function() {
-    let text = "{{ response|escapejs }}";
-    if ('speechSynthesis' in window && text) {
-      let speech = new SpeechSynthesisUtterance(text.substring(0, 300));
-      speech.lang = 'en-IN';
-      speech.rate = 0.95;
-      window.speechSynthesis.speak(speech);
-    }
-  })();
-  {% endif %}
 </script>
 
 {% endblock %}
